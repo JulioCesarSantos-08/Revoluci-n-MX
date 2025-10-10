@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revolución MX - Inicio de sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Bangers', cursive;
+      background: linear-gradient(180deg, #002366, #0b0b2e);
+      background-size: cover;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1b3b8a, #000);
+      padding: 20px;
+    }
+
+    .login-box {
+      background: rgba(15, 23, 42, 0.9);
+      border: 3px solid #00b4ff;
+      border-radius: 20px;
+      padding: 40px 30px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 0 25px #00b4ff;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 10px #00b4ff; }
+      to { box-shadow: 0 0 30px #00b4ff; }
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 10px #ffd700);
+    }
+
+    h2 {
+      color: #ffd700;
+      font-size: 2.2rem;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 2px solid #00b4ff;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #ffd700;
+      background: rgba(255,255,255,0.15);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #00b4ff, #0084ff);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(90deg, #0084ff, #00b4ff);
+      box-shadow: 0 0 15px #00b4ff;
+    }
+
+    .forgot {
+      display: block;
+      margin-top: 10px;
+      color: #ffd700;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+
+    .forgot:hover {
+      color: #fff;
+      text-shadow: 0 0 10px #ffd700;
+    }
+
+    .error {
+      margin-top: 10px;
+      color: #ff4c4c;
+      font-size: 1rem;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #aaa;
+      text-align: center;
+      padding: 10px;
+    }
+
+    @media (max-width: 480px) {
+      h2 { font-size: 1.8rem; }
+      .login-box { padding: 30px 20px; }
+      button { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <img src="imagenes/logo1.png" alt="Logo del clan" class="logo">
+      <h2>Revolución MX</h2>
+      <p>Acceso exclusivo para miembros del clan</p>
+
+      <form id="loginForm">
+        <input type="email" id="email" placeholder="Correo electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button type="submit">Iniciar sesión</button>
+      </form>
+
+      <a href="#" id="forgotPass" class="forgot">¿Olvidaste tu contraseña?</a>
+      <p id="errorMsg" class="error"></p>
+    </div>
+  </div>
+
+  <footer>© 2025 Revolución MX | México.</footer>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    // 🔥 CONFIGURA TU PROPIO PROYECTO FIREBASE AQUÍ 🔥
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_DOMINIO.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_PROJECT_ID.appspot.com",
+      messagingSenderId: "TU_MESSAGING_ID",
+      appId: "TU_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const forgotPass = document.getElementById('forgotPass');
+
+    // 🔹 Iniciar sesión
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        const doc = await db.collection('usuarios').doc(user.uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.rol === 'admin') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'miembros.html';
+          }
+        } else {
+          errorMsg.textContent = 'No se encontró el perfil del usuario.';
+        }
+      } catch (error) {
+        console.error(error);
+        errorMsg.textContent = 'Correo o contraseña incorrectos.';
+      }
+    });
+
+    // 🔹 Recuperar contraseña
+    forgotPass.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = prompt("Ingresa tu correo electrónico para restablecer tu contraseña:");
+      if (!email) return;
+      try {
+        await auth.sendPasswordResetEmail(email);
+        alert("Se ha enviado un enlace de recuperación a tu correo.");
+      } catch (error) {
+        console.error(error);
+        alert("Error: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
