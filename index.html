@@ -15,7 +15,6 @@
     body {
       font-family: 'Bangers', cursive;
       background: linear-gradient(180deg, #002366, #0b0b2e);
-      background-size: cover;
       color: #fff;
       min-height: 100vh;
       display: flex;
@@ -164,54 +163,66 @@
 
   <footer>© 2025 Revolución MX | México.</footer>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- 🔥 Firebase y autenticación integrada -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <script>
-    // 🔥 CONFIGURA TU PROPIO PROYECTO FIREBASE AQUÍ 🔥
+    // 🧩 Configuración Firebase
     const firebaseConfig = {
-      apiKey: "TU_API_KEY",
-      authDomain: "TU_DOMINIO.firebaseapp.com",
-      projectId: "TU_PROJECT_ID",
-      storageBucket: "TU_PROJECT_ID.appspot.com",
-      messagingSenderId: "TU_MESSAGING_ID",
-      appId: "TU_APP_ID"
+      apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
+      authDomain: "revolucionmx-308c2.firebaseapp.com",
+      databaseURL: "https://revolucionmx-308c2-default-rtdb.firebaseio.com",
+      projectId: "revolucionmx-308c2",
+      storageBucket: "revolucionmx-308c2.firebasestorage.app",
+      messagingSenderId: "143264550141",
+      appId: "1:143264550141:web:7e5425c2b75c5579d04294"
     };
-    firebase.initializeApp(firebaseConfig);
 
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // 🚀 Inicialización
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('errorMsg');
     const forgotPass = document.getElementById('forgotPass');
 
-    // 🔹 Iniciar sesión
+    // 🔹 Inicio de sesión
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
 
       try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        const doc = await db.collection('usuarios').doc(user.uid).get();
-        if (doc.exists) {
-          const data = doc.data();
-          if (data.rol === 'admin') {
-            window.location.href = 'admin.html';
+        // Si el correo es el del administrador
+        if (user.email === "ti43300@uvp.edu.mx") {
+          window.location.href = "admin.html";
+          return;
+        }
+
+        // 🔍 Buscar rol en Firestore
+        const userRef = doc(db, "usuarios", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (data.rol === "admin") {
+            window.location.href = "admin.html";
           } else {
-            window.location.href = 'miembros.html';
+            window.location.href = "miembros.html";
           }
         } else {
-          errorMsg.textContent = 'No se encontró el perfil del usuario.';
+          errorMsg.textContent = "Tu perfil no tiene datos asignados.";
         }
+
       } catch (error) {
         console.error(error);
-        errorMsg.textContent = 'Correo o contraseña incorrectos.';
+        errorMsg.textContent = "Correo o contraseña incorrectos.";
       }
     });
 
@@ -221,7 +232,7 @@
       const email = prompt("Ingresa tu correo electrónico para restablecer tu contraseña:");
       if (!email) return;
       try {
-        await auth.sendPasswordResetEmail(email);
+        await sendPasswordResetEmail(auth, email);
         alert("Se ha enviado un enlace de recuperación a tu correo.");
       } catch (error) {
         console.error(error);

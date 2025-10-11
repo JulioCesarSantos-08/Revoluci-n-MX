@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel del Administrador | Revolución MX</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <img src="imagenes/logo1.png" alt="Logo Clan" />
+      <h1>Revolución MX - Panel Admin</h1>
+    </div>
+    <nav class="nav">
+      <button id="verMiembrosBtn">👥 Miembros</button>
+      <button id="publicacionesBtn">📰 Publicaciones</button>
+      <button id="puntosBtn">🎯 Puntos</button>
+      <button id="logoutBtn">🚪 Cerrar sesión</button>
+    </nav>
+  </header>
+
+  <main id="contenido">
+    <!-- El contenido de las secciones se cargará aquí dinámicamente desde admin.js -->
+  </main>
+
+  <!-- Firebase -->
+  <script type="module" src="firebaseConfig.js"></script>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
