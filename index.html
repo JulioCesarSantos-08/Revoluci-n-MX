@@ -6,12 +6,7 @@
   <title>Revolución MX - Inicio de sesión</title>
   <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Bangers', cursive;
       background: linear-gradient(180deg, #002366, #0b0b2e);
@@ -22,7 +17,6 @@
       align-items: center;
       flex-direction: column;
     }
-
     .login-container {
       display: flex;
       justify-content: center;
@@ -32,7 +26,6 @@
       background: radial-gradient(circle at top, #1b3b8a, #000);
       padding: 20px;
     }
-
     .login-box {
       background: rgba(15, 23, 42, 0.9);
       border: 3px solid #00b4ff;
@@ -44,31 +37,10 @@
       box-shadow: 0 0 25px #00b4ff;
       animation: glow 2s infinite alternate;
     }
-
-    @keyframes glow {
-      from { box-shadow: 0 0 10px #00b4ff; }
-      to { box-shadow: 0 0 30px #00b4ff; }
-    }
-
-    .logo {
-      width: 120px;
-      margin-bottom: 15px;
-      filter: drop-shadow(0 0 10px #ffd700);
-    }
-
-    h2 {
-      color: #ffd700;
-      font-size: 2.2rem;
-      letter-spacing: 2px;
-      margin-bottom: 5px;
-    }
-
-    p {
-      font-size: 1.1rem;
-      margin-bottom: 20px;
-      color: #ccc;
-    }
-
+    @keyframes glow { from { box-shadow: 0 0 10px #00b4ff; } to { box-shadow: 0 0 30px #00b4ff; } }
+    .logo { width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 10px #ffd700); }
+    h2 { color: #ffd700; font-size: 2.2rem; letter-spacing: 2px; margin-bottom: 5px; }
+    p { font-size: 1.1rem; margin-bottom: 20px; color: #ccc; }
     input {
       width: 100%;
       padding: 12px;
@@ -80,13 +52,11 @@
       font-size: 1rem;
       transition: 0.3s;
     }
-
     input:focus {
       outline: none;
       border-color: #ffd700;
       background: rgba(255,255,255,0.15);
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -101,13 +71,11 @@
       transition: all 0.3s ease;
       text-transform: uppercase;
     }
-
     button:hover {
       transform: scale(1.05);
       background: linear-gradient(90deg, #0084ff, #00b4ff);
       box-shadow: 0 0 15px #00b4ff;
     }
-
     .forgot {
       display: block;
       margin-top: 10px;
@@ -116,26 +84,9 @@
       font-size: 1rem;
       transition: 0.3s;
     }
-
-    .forgot:hover {
-      color: #fff;
-      text-shadow: 0 0 10px #ffd700;
-    }
-
-    .error {
-      margin-top: 10px;
-      color: #ff4c4c;
-      font-size: 1rem;
-    }
-
-    footer {
-      margin-top: 20px;
-      font-size: 0.9rem;
-      color: #aaa;
-      text-align: center;
-      padding: 10px;
-    }
-
+    .forgot:hover { color: #fff; text-shadow: 0 0 10px #ffd700; }
+    .error { margin-top: 10px; color: #ff4c4c; font-size: 1rem; }
+    footer { margin-top: 20px; font-size: 0.9rem; color: #aaa; text-align: center; padding: 10px; }
     @media (max-width: 480px) {
       h2 { font-size: 1.8rem; }
       .login-box { padding: 30px 20px; }
@@ -163,13 +114,11 @@
 
   <footer>© 2025 Revolución MX | México.</footer>
 
-  <!-- 🔥 Firebase y autenticación integrada -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // 🧩 Configuración Firebase
+    // 🔹 Configuración Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
       authDomain: "revolucionmx-308c2.firebaseapp.com",
@@ -180,10 +129,8 @@
       appId: "1:143264550141:web:7e5425c2b75c5579d04294"
     };
 
-    // 🚀 Inicialización
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('errorMsg');
@@ -199,25 +146,12 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Si el correo es el del administrador
+        // Redirigir admin
         if (user.email === "ti43300@uvp.edu.mx") {
           window.location.href = "admin.html";
-          return;
-        }
-
-        // 🔍 Buscar rol en Firestore
-        const userRef = doc(db, "usuarios", user.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-          if (data.rol === "admin") {
-            window.location.href = "admin.html";
-          } else {
-            window.location.href = "miembros.html";
-          }
         } else {
-          errorMsg.textContent = "Tu perfil no tiene datos asignados.";
+          // Todos los demás entran como miembros
+          window.location.href = "miembros.html";
         }
 
       } catch (error) {

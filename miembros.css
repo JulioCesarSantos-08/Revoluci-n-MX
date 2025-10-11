@@ -1,0 +1,120 @@
+:root {
+  --fondo: #0d0d0d;
+  --texto: #ffffff;
+  --primario: #ffcc00;
+  --secundario: #1a1a1a;
+}
+
+body.claro {
+  --fondo: #f8f8f8;
+  --texto: #000;
+  --primario: #d4a500;
+  --secundario: #ffffff;
+}
+
+body {
+  background-color: var(--fondo);
+  color: var(--texto);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: var(--secundario);
+  border-bottom: 2px solid var(--primario);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo img {
+  width: 45px;
+  height: 45px;
+}
+
+.modo-btn {
+  background-color: var(--primario);
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.modo-btn:hover {
+  transform: scale(1.1);
+}
+
+.menu {
+  display: flex;
+  justify-content: space-around;
+  background-color: var(--secundario);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--primario);
+  position: sticky;
+  top: 0;
+}
+
+.menu button {
+  background: none;
+  border: none;
+  color: var(--texto);
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.menu button:hover {
+  color: var(--primario);
+}
+
+main {
+  padding: 20px;
+}
+
+.publicacion {
+  background-color: var(--secundario);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}
+
+.puntos-card {
+  text-align: center;
+  background-color: var(--secundario);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}
+
+.footer {
+  text-align: center;
+  padding: 10px;
+  background-color: var(--secundario);
+  border-top: 1px solid var(--primario);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .menu {
+    flex-direction: column;
+  }
+
+  .menu button {
+    padding: 8px 0;
+  }
+
+  main {
+    padding: 10px;
+  }
+}
