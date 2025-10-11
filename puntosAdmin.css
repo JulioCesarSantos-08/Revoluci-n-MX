@@ -1,0 +1,42 @@
+section {
+  background-color: #1a1a1a;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
+}
+
+form label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #00b4ff;
+}
+
+form input, form select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: none;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+button.submit {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #00b4ff, #0084ff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button.submit:hover {
+  background: linear-gradient(90deg, #0084ff, #00b4ff);
+  transform: scale(1.05);
+}

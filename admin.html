@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -21,11 +21,74 @@
   </header>
 
   <main id="contenido">
-    <!-- El contenido de las secciones se cargará aquí dinámicamente desde admin.js -->
+    <h2>Bienvenido al panel de administración</h2>
+    <p>Selecciona una sección para administrar los miembros, publicaciones o puntos.</p>
   </main>
 
-  <!-- Firebase -->
-  <script type="module" src="firebaseConfig.js"></script>
-  <script type="module" src="admin.js"></script>
+  <!-- Firebase y Admin JS -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // 🔹 Configuración Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
+      authDomain: "revolucionmx-308c2.firebaseapp.com",
+      databaseURL: "https://revolucionmx-308c2-default-rtdb.firebaseio.com",
+      projectId: "revolucionmx-308c2",
+      storageBucket: "revolucionmx-308c2.firebasestorage.app",
+      messagingSenderId: "143264550141",
+      appId: "1:143264550141:web:7e5425c2b75c5579d04294"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const contenido = document.getElementById('contenido');
+    const verMiembrosBtn = document.getElementById('verMiembrosBtn');
+    const publicacionesBtn = document.getElementById('publicacionesBtn');
+    const puntosBtn = document.getElementById('puntosBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // 🔹 Protección de acceso
+    const admins = ["ti43300@uvp.edu.mx", "andrespersandoval@gmail.com", "luisramirezd86@gmail.com"];
+    onAuthStateChanged(auth, (user) => {
+      if (!user || !admins.includes(user.email)) {
+        alert("⚠️ Acceso denegado.");
+        signOut(auth);
+        window.location.href = "index.html";
+      }
+    });
+
+    // 🔹 Cerrar sesión
+    logoutBtn.addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = "index.html";
+    });
+
+    // 🔹 Función para cargar páginas dentro del main
+    async function cargarSeccion(url) {
+      const response = await fetch(url);
+      const html = await response.text();
+      contenido.innerHTML = html;
+
+      // Cargar el JS correspondiente si existe
+      const scriptId = url.replace(".html", "Script");
+      if (!document.getElementById(scriptId)) {
+        const script = document.createElement('script');
+        script.src = url.replace(".html", ".js");
+        script.type = "module";
+        script.id = scriptId;
+        document.body.appendChild(script);
+      }
+    }
+
+    // 🔹 Eventos de botones
+    verMiembrosBtn.addEventListener('click', () => cargarSeccion('miembrosAdmin.html'));
+    publicacionesBtn.addEventListener('click', () => cargarSeccion('publicacionesAdmin.html'));
+    puntosBtn.addEventListener('click', () => cargarSeccion('puntosAdmin.html'));
+  </script>
 </body>
 </html>
