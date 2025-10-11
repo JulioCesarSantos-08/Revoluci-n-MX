@@ -1,0 +1,98 @@
+body {
+  background-color: #111;
+  color: white;
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #222;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 3px solid gold;
+  flex-wrap: wrap;
+}
+
+header img {
+  width: 60px;
+  border-radius: 8px;
+}
+
+header h1 {
+  color: gold;
+  font-size: 1.2rem;
+  margin: 0 10px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+nav button {
+  background-color: gold;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+nav button:hover {
+  background-color: #ffeb3b;
+}
+
+main {
+  padding: 20px;
+}
+
+h2, h3 {
+  color: gold;
+}
+
+.puntos-card {
+  background-color: #1e1e1e;
+  border: 2px solid gold;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.3rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background-color: #222;
+}
+
+.dark-mode {
+  background-color: #fafafa;
+  color: #111;
+}
+
+.dark-mode header {
+  background-color: #ddd;
+  border-color: #333;
+}
+
+.dark-mode nav button {
+  background-color: #222;
+  color: gold;
+}

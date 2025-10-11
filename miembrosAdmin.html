@@ -3,30 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administración de Miembros - Revolución MX</title>
+  <title>Revolución MX - Miembros Admin</title>
   <link rel="stylesheet" href="miembrosAdmin.css">
 </head>
 <body>
   <header>
-    <div class="logo">
-      <img src="imagenes/logo1.png" alt="Logo Revolución MX">
-      <h1>Revolución MX - Miembros</h1>
-    </div>
-    <div class="header-buttons">
-      <button id="toggleMode">Modo Oscuro/Claro</button>
-      <button id="logoutBtn">Cerrar sesión</button>
-    </div>
+    <img src="logo1.png" alt="Logo">
+    <h1>Revolución MX - Panel Admin</h1>
+    <nav>
+      <button onclick="location.href='miembrosAdmin.html'">👥 Miembros</button>
+      <button onclick="location.href='publicacionesAdmin.html'">📰 Publicaciones</button>
+      <button onclick="location.href='puntosAdmin.html'">🎯 Puntos</button>
+      <button id="logoutBtn">🚪 Cerrar sesión</button>
+    </nav>
   </header>
 
-  <main>
-    <div id="contenido">
-      <!-- Aquí se cargará la tabla y formularios desde JS -->
-    </div>
-  </main>
-
-  <footer>
-    © 2025 Revolución MX | México.
-  </footer>
+  <main id="contenido"></main>
 
   <script type="module" src="miembrosAdmin.js"></script>
 </body>

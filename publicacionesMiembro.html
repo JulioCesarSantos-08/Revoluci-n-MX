@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publicaciones del Miembro</title>
+  <link rel="stylesheet" href="publicacionesMiembro.css" />
+</head>
+<body>
+  <header>
+    <h1>📢 Mis Publicaciones</h1>
+    <nav>
+      <button id="inicioBtn">🏠 Inicio</button>
+      <button id="logoutBtn">🚪 Cerrar sesión</button>
+      <button id="toggleMode">🌙 / ☀️</button>
+    </nav>
+  </header>
+
+  <main id="contenido">
+    <section id="bienvenida">
+      <h2>Bienvenido, <span id="nombreMiembro"></span> 👋</h2>
+    </section>
+
+    <section id="misPublicaciones">
+      <h3>Mis Publicaciones</h3>
+      <div id="listaPublicaciones">Cargando...</div>
+    </section>
+
+    <section id="nuevaPublicacion">
+      <h3>Agregar nueva publicación</h3>
+      <form id="formPublicacion">
+        <label>Título</label>
+        <input type="text" id="tituloPub" required />
+
+        <label>Descripción</label>
+        <textarea id="descPub" required></textarea>
+
+        <button type="submit">Publicar</button>
+      </form>
+    </section>
+  </main>
+
+  <script type="module" src="publicacionesMiembro.js"></script>
+</body>
+</html>

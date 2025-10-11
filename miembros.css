@@ -1,32 +1,19 @@
-:root {
-  --fondo: #0d0d0d;
-  --texto: #ffffff;
-  --primario: #ffcc00;
-  --secundario: #1a1a1a;
-}
-
-body.claro {
-  --fondo: #f8f8f8;
-  --texto: #000;
-  --primario: #d4a500;
-  --secundario: #ffffff;
-}
-
 body {
-  background-color: var(--fondo);
-  color: var(--texto);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", sans-serif;
+  background: #f5f5f5;
+  color: #222;
   margin: 0;
-  transition: background-color 0.3s, color 0.3s;
+  transition: background 0.3s, color 0.3s;
 }
 
+/* 🔹 Encabezado */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background-color: var(--secundario);
-  border-bottom: 2px solid var(--primario);
+  background: #0077cc;
+  color: white;
+  padding: 10px 20px;
 }
 
 .logo {
@@ -41,80 +28,93 @@ body {
 }
 
 .modo-btn {
-  background-color: var(--primario);
+  background: white;
+  color: #0077cc;
   border: none;
-  padding: 10px;
-  border-radius: 50%;
+  border-radius: 8px;
+  padding: 8px 12px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  font-size: 18px;
 }
 
-.modo-btn:hover {
-  transform: scale(1.1);
-}
-
+/* 🔹 Menú */
 .menu {
   display: flex;
-  justify-content: space-around;
-  background-color: var(--secundario);
-  padding: 10px 0;
-  border-bottom: 1px solid var(--primario);
-  position: sticky;
-  top: 0;
+  justify-content: center;
+  background: #e9f3ff;
+  padding: 10px;
+  gap: 10px;
 }
 
 .menu button {
-  background: none;
+  background: #0077cc;
+  color: white;
   border: none;
-  color: var(--texto);
-  font-size: 1rem;
+  border-radius: 6px;
+  padding: 10px 15px;
   cursor: pointer;
-  font-weight: bold;
-  transition: color 0.3s;
+  font-size: 15px;
+  transition: 0.3s;
 }
 
 .menu button:hover {
-  color: var(--primario);
+  background: #005fa3;
 }
 
-main {
-  padding: 20px;
-}
-
-.publicacion {
-  background-color: var(--secundario);
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
-}
-
-.puntos-card {
+/* 🔹 Contenido */
+#contenido {
+  padding: 25px;
   text-align: center;
-  background-color: var(--secundario);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
 }
 
+.inicio h2 {
+  color: #0077cc;
+}
+
+.inicio .nombre {
+  color: #ff7b00;
+  font-weight: bold;
+}
+
+.banner {
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 🔹 Pie */
 .footer {
+  background: #0077cc;
+  color: white;
   text-align: center;
   padding: 10px;
-  background-color: var(--secundario);
-  border-top: 1px solid var(--primario);
-  font-size: 0.9rem;
+  margin-top: 30px;
 }
 
-@media (max-width: 600px) {
-  .menu {
-    flex-direction: column;
-  }
+/* 🔹 Modo oscuro */
+.dark-mode {
+  background: #121212;
+  color: #ddd;
+}
 
-  .menu button {
-    padding: 8px 0;
-  }
+.dark-mode .header {
+  background: #222;
+}
 
-  main {
-    padding: 10px;
-  }
+.dark-mode .menu {
+  background: #1e1e1e;
+}
+
+.dark-mode .menu button {
+  background: #333;
+}
+
+.dark-mode .menu button:hover {
+  background: #555;
+}
+
+.dark-mode .footer {
+  background: #222;
 }

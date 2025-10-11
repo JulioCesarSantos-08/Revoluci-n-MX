@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recompensas | Revolución MX</title>
+  <link rel="stylesheet" href="recompensasMiembro.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <img src="imagenes/logo1.png" alt="Logo Revolución MX">
+      <h1>Recompensas</h1>
+    </div>
+    <button id="backBtn">⬅️ Volver</button>
+  </header>
+
+  <main id="contenido">
+    <h2>🎁 Canjea tus puntos por recompensas</h2>
+    <p id="puntosUsuario">Cargando tus puntos...</p>
+
+    <div id="listaRecompensas" class="grid"></div>
+  </main>
+
+  <!-- Modal del ticket -->
+  <div id="modalTicket" class="modal oculto">
+    <div class="modal-contenido">
+      <h3>🎟️ Ticket de Canje</h3>
+      <p id="ticketInfo"></p>
+      <button id="cerrarModal">Cerrar</button>
+    </div>
+  </div>
+
+  <script type="module" src="recompensasMiembro.js"></script>
+</body>
+</html>

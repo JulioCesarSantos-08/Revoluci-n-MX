@@ -1,12 +1,20 @@
-import { 
-  getAuth, signOut, onAuthStateChanged 
+import {
+  getAuth,
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-  getFirestore, collection, getDocs, updateDoc, doc, deleteDoc 
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  setDoc,
+  doc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-// Configuración Firebase
+// 🔧 Configuración Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
   authDomain: "revolucionmx-308c2.firebaseapp.com",
@@ -21,12 +29,13 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const contenido = document.getElementById('contenido');
-const logoutBtn = document.getElementById('logoutBtn');
-const toggleMode = document.getElementById('toggleMode');
-
 // 🔹 Protección de acceso
-const admins = ["ti43300@uvp.edu.mx", "andrespersandoval@gmail.com", "luisramirezd86@gmail.com"];
+const admins = [
+  "ti43300@uvp.edu.mx",
+  "andrespersandoval@gmail.com",
+  "luisramirezd86@gmail.com"
+];
+
 onAuthStateChanged(auth, (user) => {
   if (!user || !admins.includes(user.email)) {
     alert("⚠️ Acceso denegado.");
@@ -38,18 +47,14 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // 🔹 Cerrar sesión
-logoutBtn.addEventListener('click', async () => {
+document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   await signOut(auth);
   window.location.href = "index.html";
 });
 
-// 🔹 Modo oscuro/claro
-toggleMode.addEventListener('click', () => {
-  document.body.classList.toggle('dark-mode');
-});
-
-// 👥 Mostrar miembros
+// 👥 Mostrar miembros y formulario
 async function mostrarMiembros() {
+  const contenido = document.getElementById("contenido");
   contenido.innerHTML = `
     <h2>Lista de miembros</h2>
     <table id="tablaMiembros">
@@ -61,84 +66,93 @@ async function mostrarMiembros() {
           <th>Acciones</th>
         </tr>
       </thead>
-      <tbody id="cuerpoMiembros"></tbody>
+      <tbody id="cuerpoMiembros">
+        <tr><td colspan="4">Cargando miembros...</td></tr>
+      </tbody>
     </table>
 
     <h3>Agregar / Actualizar Información</h3>
     <form id="formMiembro">
-      <label>Selecciona miembro:</label>
-      <select id="miembroSelect" required></select>
-      <label>Nombre (Juego)</label>
+      <label>Correo del miembro:</label>
+      <input type="email" id="correoMiembro" placeholder="ejemplo@correo.com" required>
+
+      <label>Nombre (Juego):</label>
       <input type="text" id="nombreMiembro" required>
-      <label>ID / Etiqueta</label>
+
+      <label>ID / Etiqueta:</label>
       <input type="text" id="idMiembro" required>
+
       <button type="submit">Guardar información</button>
     </form>
   `;
 
-  const cuerpo = document.getElementById('cuerpoMiembros');
-  const miembroSelect = document.getElementById('miembroSelect');
+  const cuerpo = document.getElementById("cuerpoMiembros");
 
-  const querySnapshot = await getDocs(collection(db, "miembros"));
-  cuerpo.innerHTML = '';
-  miembroSelect.innerHTML = '<option value="">Selecciona un miembro</option>';
+  try {
+    const miembrosSnap = await getDocs(collection(db, "miembros"));
+    cuerpo.innerHTML = "";
 
-  querySnapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${data.email}</td>
-      <td>${data.nombre || '-'}</td>
-      <td>${data.idJuego || '-'}</td>
-      <td>
-        <button class="editarBtn" data-id="${docSnap.id}">Editar</button>
-        <button class="eliminarBtn" data-id="${docSnap.id}">Eliminar</button>
-      </td>
-    `;
-    cuerpo.appendChild(tr);
-
-    // Select de miembros
-    const option = document.createElement('option');
-    option.value = docSnap.id;
-    option.textContent = data.email;
-    miembroSelect.appendChild(option);
-  });
-
-  // Editar miembro
-  document.querySelectorAll('.editarBtn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const docId = e.target.dataset.id;
-      const docRef = doc(db, "miembros", docId);
-      const docSnap = await docRef.get();
+    miembrosSnap.forEach((docSnap) => {
       const data = docSnap.data();
-      miembroSelect.value = docId;
-      document.getElementById('nombreMiembro').value = data.nombre || '';
-      document.getElementById('idMiembro').value = data.idJuego || '';
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${data.email}</td>
+        <td>${data.nombre || "-"}</td>
+        <td>${data.idJuego || "-"}</td>
+        <td>
+          <button class="editarBtn" data-id="${docSnap.id}">✏️</button>
+          <button class="eliminarBtn" data-id="${docSnap.id}">🗑️</button>
+        </td>
+      `;
+      cuerpo.appendChild(tr);
     });
-  });
 
-  // Eliminar miembro
-  document.querySelectorAll('.eliminarBtn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const docId = e.target.dataset.id;
-      if (confirm("¿Seguro que quieres eliminar a este miembro?")) {
-        await deleteDoc(doc(db, "miembros", docId));
-        alert("Miembro eliminado ✅");
-        mostrarMiembros();
-      }
+    // Editar miembro
+    document.querySelectorAll(".editarBtn").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        const id = e.target.dataset.id;
+        const docSnap = await getDoc(doc(db, "miembros", id));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById("correoMiembro").value = data.email || "";
+          document.getElementById("nombreMiembro").value = data.nombre || "";
+          document.getElementById("idMiembro").value = data.idJuego || "";
+        }
+      });
     });
-  });
 
-  // Guardar información
-  document.getElementById('formMiembro').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const docId = miembroSelect.value;
-    const nombre = document.getElementById('nombreMiembro').value.trim();
-    const idJuego = document.getElementById('idMiembro').value.trim();
-    if (!docId) return alert("Selecciona un miembro");
+    // Eliminar miembro
+    document.querySelectorAll(".eliminarBtn").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        const id = e.target.dataset.id;
+        if (confirm("¿Seguro que deseas eliminar este miembro?")) {
+          await deleteDoc(doc(db, "miembros", id));
+          alert("Miembro eliminado ✅");
+          mostrarMiembros();
+        }
+      });
+    });
 
-    await updateDoc(doc(db, "miembros", docId), { nombre, idJuego });
-    alert("Información actualizada ✅");
-    mostrarMiembros();
-  });
+    // Guardar / actualizar miembro
+    document.getElementById("formMiembro").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const correo = document.getElementById("correoMiembro").value.trim().toLowerCase();
+      const nombre = document.getElementById("nombreMiembro").value.trim();
+      const idJuego = document.getElementById("idMiembro").value.trim();
+
+      if (!correo) return alert("Por favor, ingresa un correo válido.");
+
+      await setDoc(
+        doc(db, "miembros", correo),
+        { email: correo, nombre, idJuego },
+        { merge: true }
+      );
+
+      alert("Información guardada correctamente ✅");
+      mostrarMiembros();
+    });
+  } catch (err) {
+    console.error("Error al cargar miembros:", err);
+    cuerpo.innerHTML = `<tr><td colspan='4'>Error al cargar miembros.</td></tr>`;
+  }
 }

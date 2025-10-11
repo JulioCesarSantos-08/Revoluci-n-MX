@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Puntos - Revolución MX</title>
+  <link rel="stylesheet" href="puntosMiembro.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="imagenes/logo1.png" alt="Logo Revolución MX">
+      <h1>Revolución MX - Miembro</h1>
+    </div>
+    <nav>
+      <button onclick="location.href='puntosMiembro.html'">🎯 Puntos</button>
+      <button onclick="location.href='publicacionesMiembro.html'">📰 Publicaciones</button>
+      <button id="toggleMode">🌙/☀️</button>
+      <button id="logoutBtn">🚪 Cerrar sesión</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="bienvenida">
+      <h2 id="mensajeBienvenida">Bienvenido, miembro</h2>
+    </section>
+
+    <section class="puntos-section">
+      <h3>Tus puntos actuales</h3>
+      <div class="puntos-card">
+        <p id="puntosTotales">Cargando...</p>
+      </div>
+    </section>
+
+    <section class="historial-section">
+      <h3>Historial de puntos</h3>
+      <table id="tablaPuntos">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Motivo</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoPuntos">
+          <tr><td colspan="3">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>© 2025 Revolución MX | México</footer>
+  <script type="module" src="puntosMiembro.js"></script>
+</body>
+</html>
