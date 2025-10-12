@@ -3,125 +3,129 @@ import {
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 import {
   getFirestore,
-  doc,
-  getDoc,
+  getDocs,
   collection,
-  getDocs
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 // 🔧 Configuración Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
   authDomain: "revolucionmx-308c2.firebaseapp.com",
-  databaseURL: "https://revolucionmx-308c2-default-rtdb.firebaseio.com",
   projectId: "revolucionmx-308c2",
   storageBucket: "revolucionmx-308c2.firebasestorage.app",
   messagingSenderId: "143264550141",
-  appId: "1:143264550141:web:7e5425c2b75c5579d04294"
+  appId: "1:143264550141:web:7e5425c2b75c5579d04294",
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔹 Elementos
+// 🔹 Elementos del DOM
 const logoutBtn = document.getElementById("logoutBtn");
-const toggleMode = document.getElementById("toggleMode");
-const mensajeBienvenida = document.getElementById("mensajeBienvenida");
-const puntosTotales = document.getElementById("puntosTotales");
-const cuerpoPuntos = document.getElementById("cuerpoPuntos");
+const modoBtn = document.getElementById("modoBtn");
+const homeBtn = document.getElementById("homeBtn");
+const recompensasBtn = document.getElementById("recompensasBtn");
+const nombreUsuario = document.getElementById("nombreUsuario");
+const totalPuntos = document.getElementById("totalPuntos");
+const listaHistorial = document.getElementById("listaHistorial");
 
-// 🔹 Administradores (para redirigir)
-const admins = [
-  "ti43300@uvp.edu.mx",
-  "andrespersandoval@gmail.com",
-  "luisramirezd86@gmail.com"
-];
+// 🌙 Activar modo oscuro por defecto
+document.body.classList.add("dark-mode");
+localStorage.setItem("modo", "oscuro");
+modoBtn.textContent = "☀️";
 
-// 🔹 Verificación de sesión
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  if (admins.includes(user.email)) {
-    window.location.href = "puntosAdmin.html";
-    return;
-  }
-
-  // 🔹 Buscar nombre del miembro
-  const miembroRef = doc(db, "miembros", user.email);
-  const miembroSnap = await getDoc(miembroRef);
-
-  if (miembroSnap.exists()) {
-    const data = miembroSnap.data();
-    mensajeBienvenida.textContent = `Bienvenido, ${data.nombre || "miembro"}`;
-  } else {
-    mensajeBienvenida.textContent = `Bienvenido, ${user.email}`;
-  }
-
-  // 🔹 Cargar puntos
-  await cargarPuntos(user.email);
-});
-
-// 🔹 Cerrar sesión
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
-});
-
-// 🔹 Modo oscuro / claro
-toggleMode.addEventListener("click", () => {
+// 🔹 Cambiar modo oscuro / claro
+modoBtn?.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
   localStorage.setItem(
     "modo",
     document.body.classList.contains("dark-mode") ? "oscuro" : "claro"
   );
+  modoBtn.textContent = document.body.classList.contains("dark-mode")
+    ? "☀️"
+    : "🌙";
 });
 
-if (localStorage.getItem("modo") === "oscuro") {
-  document.body.classList.add("dark-mode");
-}
+// 🔹 Cerrar sesión
+logoutBtn?.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "index.html";
+});
 
-// 🔹 Función para cargar los puntos
-async function cargarPuntos(correo) {
-  try {
-    const puntosRef = collection(db, "puntos");
-    const snapshot = await getDocs(puntosRef);
-    let total = 0;
-    let registros = [];
-
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      if (data.email === correo) {
-        registros.push(data);
-        total += data.cantidad || 0;
-      }
-    });
-
-    puntosTotales.textContent = `${total} puntos`;
-
-    if (registros.length === 0) {
-      cuerpoPuntos.innerHTML = `<tr><td colspan="3">No tienes puntos registrados aún.</td></tr>`;
-      return;
-    }
-
-    cuerpoPuntos.innerHTML = "";
-    registros.forEach((p) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${p.fecha || "-"}</td>
-        <td>${p.motivo || "-"}</td>
-        <td>${p.cantidad || 0}</td>
-      `;
-      cuerpoPuntos.appendChild(tr);
-    });
-  } catch (err) {
-    console.error("Error al cargar puntos:", err);
-    cuerpoPuntos.innerHTML = `<tr><td colspan="3">Error al cargar datos.</td></tr>`;
+// 🔹 Verificar usuario activo
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert("Debes iniciar sesión primero.");
+    window.location.href = "index.html";
+    return;
   }
+
+  // Buscar al miembro correspondiente
+  const miembrosSnap = await getDocs(collection(db, "miembros"));
+  let miembroDoc = null;
+  let nombre = null;
+
+  miembrosSnap.forEach((docu) => {
+    const data = docu.data();
+    if (data.email === user.email) {
+      miembroDoc = { id: docu.id, ...data };
+      nombre = data.nombre;
+    }
+  });
+
+  if (!miembroDoc) {
+    alert("Tu perfil no tiene datos registrados.");
+    await signOut(auth);
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Mostrar información
+  nombreUsuario.textContent = nombre;
+  totalPuntos.textContent = miembroDoc.puntos || 0;
+
+  mostrarHistorial(miembroDoc.id);
+});
+
+// 🔹 Mostrar historial de puntos
+async function mostrarHistorial(idMiembro) {
+  const miembroRef = doc(db, "miembros", idMiembro);
+  const miembroSnap = await getDoc(miembroRef);
+
+  if (!miembroSnap.exists()) {
+    listaHistorial.innerHTML = `<li>No se encontró historial.</li>`;
+    return;
+  }
+
+  const data = miembroSnap.data();
+  const historial = data.historialPuntos || [];
+
+  if (historial.length === 0) {
+    listaHistorial.innerHTML = `<li>Aún no tienes movimientos de puntos.</li>`;
+    return;
+  }
+
+  listaHistorial.innerHTML = "";
+  historial.slice().reverse().forEach((mov) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${mov.fecha || "Sin fecha"}:</strong> ${mov.descripcion} 
+      <span class="${mov.cambio > 0 ? 'positivo' : 'negativo'}">
+        ${mov.cambio > 0 ? "+" : ""}${mov.cambio}
+      </span>
+    `;
+    listaHistorial.appendChild(li);
+  });
 }
+
+// 🔹 Navegación
+homeBtn.addEventListener("click", () => window.location.href = "publicacionesMiembro.html");
+recompensasBtn.addEventListener("click", () => window.location.href = "recompensasMiembro.html");

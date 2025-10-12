@@ -2,25 +2,28 @@ import {
   getAuth, signOut, onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
-  getFirestore, collection, addDoc, getDocs, updateDoc, doc 
+  getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app } from "./firebaseConfig.js";
 
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Botones principales
 const verMiembrosBtn = document.getElementById('verMiembrosBtn');
 const publicacionesBtn = document.getElementById('publicacionesBtn');
 const puntosBtn = document.getElementById('puntosBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const contenido = document.getElementById('contenido');
 
-// ✅ Protección: Solo el admin autorizado puede acceder
+// ✅ Protección de administradores
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
-  } else if (user.email !== "ti43300@uvp.edu.mx", "andrespersandoval@gmail.com", "luisramirezd86@gmail.com") {
+  } else if (
+    user.email !== "ti43300@uvp.edu.mx" &&
+    user.email !== "andrespersandoval@gmail.com" &&
+    user.email !== "luisramirezd86@gmail.com"
+  ) {
     alert("⚠️ Acceso denegado. No eres administrador.");
     signOut(auth);
     window.location.href = "index.html";
@@ -33,33 +36,126 @@ logoutBtn.addEventListener('click', async () => {
   window.location.href = "index.html";
 });
 
-// 🧩 Mostrar secciones
+// 🧩 Botones de navegación
 verMiembrosBtn.addEventListener('click', mostrarMiembros);
 publicacionesBtn.addEventListener('click', mostrarPublicaciones);
 puntosBtn.addEventListener('click', mostrarPuntos);
 
-// 👥 Mostrar lista de miembros
+// 👥 Mostrar lista de miembros con edición y eliminación
 async function mostrarMiembros() {
-  contenido.innerHTML = `<h2>👥 Lista de miembros</h2><div id="miembrosContainer">Cargando...</div>`;
+  contenido.innerHTML = `
+    <h2>👥 Lista de miembros</h2>
+    <div class="tabla-contenedor">
+      <table class="tabla-miembros">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Correo</th>
+            <th>Nombre (Juego)</th>
+            <th>ID / Etiqueta</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaBody">
+          <tr><td colspan="5" class="loading">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-  const miembrosContainer = document.getElementById('miembrosContainer');
-  const querySnapshot = await getDocs(collection(db, "miembros"));
-  miembrosContainer.innerHTML = '';
+    <h3 style="margin-top: 40px;">Agregar / Actualizar Información</h3>
+    <section>
+      <form id="agregarMiembroForm">
+        <label>Correo del miembro:</label>
+        <input type="email" id="emailMiembro" placeholder="ejemplo@correo.com" required>
 
-  querySnapshot.forEach((docSnap) => {
+        <label>Nombre (Juego):</label>
+        <input type="text" id="nombreMiembro" required>
+
+        <label>ID / Etiqueta:</label>
+        <input type="text" id="idMiembro" required>
+
+        <button type="submit" class="submit">Guardar información</button>
+      </form>
+    </section>
+  `;
+
+  const tablaBody = document.getElementById('tablaBody');
+  const miembrosSnap = await getDocs(collection(db, "miembros"));
+  tablaBody.innerHTML = "";
+
+  let contador = 1;
+  miembrosSnap.forEach((docSnap) => {
     const data = docSnap.data();
-    const div = document.createElement('div');
-    div.classList.add('miembro-card');
-    div.innerHTML = `
-      <strong>${data.nombre}</strong><br>
-      Puntos: ${data.puntos || 0}<br>
-      Email: ${data.email}
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+      <td>${contador++}</td>
+      <td>${data.email || ""}</td>
+      <td>${data.nombre || ""}</td>
+      <td>${data.id || ""}</td>
+      <td>
+        <button class="btn-editar" data-id="${docSnap.id}" data-email="${data.email}" data-nombre="${data.nombre}" data-idjuego="${data.id}">✏️</button>
+        <button class="btn-eliminar" data-id="${docSnap.id}">🗑️</button>
+      </td>
     `;
-    miembrosContainer.appendChild(div);
+    tablaBody.appendChild(fila);
+  });
+
+  // 🎯 Editar miembro
+  document.querySelectorAll(".btn-editar").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("emailMiembro").value = btn.dataset.email;
+      document.getElementById("nombreMiembro").value = btn.dataset.nombre;
+      document.getElementById("idMiembro").value = btn.dataset.idjuego;
+    });
+  });
+
+  // 🗑️ Eliminar miembro
+  document.querySelectorAll(".btn-eliminar").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const confirmacion = confirm("¿Estás seguro de eliminar este miembro?");
+      if (confirmacion) {
+        await deleteDoc(doc(db, "miembros", btn.dataset.id));
+        alert("✅ Miembro eliminado.");
+        mostrarMiembros();
+      }
+    });
+  });
+
+  // 💾 Agregar o actualizar
+  document.getElementById('agregarMiembroForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('emailMiembro').value.trim();
+    const nombre = document.getElementById('nombreMiembro').value.trim();
+    const id = document.getElementById('idMiembro').value.trim();
+
+    if (!email || !nombre || !id) {
+      alert("❌ Todos los campos son obligatorios.");
+      return;
+    }
+
+    let miembroRef = null;
+    const querySnapshot = await getDocs(collection(db, "miembros"));
+    for (const docSnap of querySnapshot.docs) {
+      if (docSnap.data().email === email) {
+        miembroRef = doc(db, "miembros", docSnap.id);
+        break;
+      }
+    }
+
+    if (miembroRef) {
+      await updateDoc(miembroRef, { nombre, id });
+      alert("✅ Información actualizada.");
+    } else {
+      await addDoc(collection(db, "miembros"), { email, nombre, id, puntos: 0 });
+      alert("✅ Miembro agregado.");
+    }
+
+    mostrarMiembros(); // recargar
   });
 }
 
-// 📰 Subir publicaciones
+// 📰 Publicaciones
 function mostrarPublicaciones() {
   contenido.innerHTML = `
     <h2>📰 Subir publicación</h2>
@@ -92,7 +188,7 @@ function mostrarPublicaciones() {
   });
 }
 
-// 🎯 Asignar puntos a miembros
+// 🎯 Puntos
 async function mostrarPuntos() {
   contenido.innerHTML = `
     <h2>🎯 Asignar puntos</h2>

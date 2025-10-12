@@ -77,9 +77,10 @@ section {
   padding: 20px;
   box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
   animation: fadeIn 0.4s ease-in-out;
+  margin-top: 30px;
 }
 
-h2 {
+h2, h3 {
   color: #ffcc00;
   text-align: center;
   margin-bottom: 20px;
@@ -123,10 +124,11 @@ button.submit {
   font-weight: bold;
   border: none;
   border-radius: 6px;
-  padding: 10px 15px;
+  padding: 12px;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 15px;
   transition: all 0.3s ease;
+  font-size: 1rem;
 }
 
 button.submit:hover {
@@ -135,30 +137,98 @@ button.submit:hover {
 }
 
 /* ==============================
-   TARJETAS DE MIEMBROS
+   TABLA DE MIEMBROS
 ============================== */
-#miembrosContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+.tabla-contenedor {
+  overflow-x: auto;
+  margin-top: 25px;
+  border-radius: 10px;
+  background-color: #1a1a1a;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
 }
 
-.miembro-card {
+.tabla-miembros {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #ffcc00;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tabla-miembros th,
+.tabla-miembros td {
+  padding: 12px 15px;
+  text-align: center;
+  border: 1px solid #333;
+}
+
+.tabla-miembros th {
+  background-color: #ffcc00;
+  color: #1a1a1a;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tabla-miembros tr:nth-child(even) {
   background-color: #2a2a2a;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 0 8px rgba(255, 204, 0, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.miembro-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+.tabla-miembros tr:nth-child(odd) {
+  background-color: #1a1a1a;
 }
 
-.miembro-card strong {
-  color: #ffcc00;
+.tabla-miembros tr:hover {
+  background-color: #333;
+  transition: 0.3s;
+}
+
+/* ==============================
+   BOTONES DE ACCIÓN EN TABLA
+============================== */
+.btn-editar,
+.btn-eliminar,
+.btn-guardar {
+  border: none;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.btn-editar {
+  background-color: #ffcc00;
+  color: #1a1a1a;
+}
+
+.btn-eliminar {
+  background-color: #e63946;
+  color: white;
+}
+
+.btn-guardar {
+  background-color: #ffcc00;
+  color: #1a1a1a;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-editar:hover {
+  background-color: #ffdb4d;
+  transform: scale(1.05);
+}
+
+.btn-eliminar:hover {
+  background-color: #ff4d4d;
+  transform: scale(1.05);
+}
+
+.btn-guardar:hover {
+  background-color: #ffdb4d;
+  transform: scale(1.03);
 }
 
 /* ==============================
@@ -192,5 +262,21 @@ button.submit:hover {
 
   .logo h1 {
     font-size: 1rem;
+  }
+
+  .tabla-miembros th, 
+  .tabla-miembros td {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  button.submit {
+    font-size: 0.95rem;
+  }
+
+  .btn-editar,
+  .btn-eliminar {
+    padding: 6px 10px;
+    font-size: 0.8rem;
   }
 }

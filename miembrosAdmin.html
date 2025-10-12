@@ -1,25 +1,41 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Revolución MX - Miembros Admin</title>
-  <link rel="stylesheet" href="miembrosAdmin.css">
-</head>
-<body>
-  <header>
-    <img src="logo1.png" alt="Logo">
-    <h1>Revolución MX - Panel Admin</h1>
-    <nav>
-      <button onclick="location.href='miembrosAdmin.html'">👥 Miembros</button>
-      <button onclick="location.href='publicacionesAdmin.html'">📰 Publicaciones</button>
-      <button onclick="location.href='puntosAdmin.html'">🎯 Puntos</button>
-      <button id="logoutBtn">🚪 Cerrar sesión</button>
-    </nav>
-  </header>
+<section>
+  <h2>👥 Lista de miembros</h2>
 
-  <main id="contenido"></main>
+  <div class="tabla-contenedor">
+    <table class="tabla-miembros">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Correo</th>
+          <th>Nombre (Juego)</th>
+          <th>ID / Etiqueta</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaMiembros">
+        <tr>
+          <td colspan="5" class="loading">Cargando miembros...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
-  <script type="module" src="miembrosAdmin.js"></script>
-</body>
-</html>
+<section>
+  <h3>Agregar / Actualizar Información</h3>
+  <form id="formMiembro">
+    <label for="correo">Correo del miembro:</label>
+    <input type="email" id="correo" placeholder="ejemplo@correo.com" required>
+
+    <label for="nombreJuego">Nombre (Juego):</label>
+    <input type="text" id="nombreJuego" required>
+
+    <label for="etiqueta">ID / Etiqueta:</label>
+    <input type="text" id="etiqueta" required>
+
+    <button type="submit" class="submit">Guardar información</button>
+  </form>
+</section>
+
+<!-- Script -->
+<script type="module" src="miembrosAdmin.js"></script>

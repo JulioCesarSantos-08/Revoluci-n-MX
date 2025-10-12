@@ -1,98 +1,75 @@
 body {
-  background-color: #111;
-  color: white;
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Poppins", sans-serif;
+  background-color: #121212;
+  color: #fff;
   margin: 0;
   padding: 0;
 }
 
 header {
-  background-color: #222;
+  background: #1e1e1e;
+  padding: 10px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  border-bottom: 3px solid gold;
-  flex-wrap: wrap;
-}
-
-header img {
-  width: 60px;
-  border-radius: 8px;
+  align-items: center;
 }
 
 header h1 {
-  color: gold;
-  font-size: 1.2rem;
-  margin: 0 10px;
-}
-
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  font-size: 1.4em;
 }
 
 nav button {
-  background-color: gold;
-  color: black;
+  background: #333;
   border: none;
+  color: white;
+  margin: 0 5px;
+  padding: 8px 12px;
   border-radius: 8px;
-  padding: 8px 14px;
   cursor: pointer;
-  font-weight: bold;
-  transition: 0.2s;
 }
 
 nav button:hover {
-  background-color: #ffeb3b;
+  background: #555;
 }
 
 main {
   padding: 20px;
 }
 
-h2, h3 {
-  color: gold;
-}
-
-.puntos-card {
-  background-color: #1e1e1e;
-  border: 2px solid gold;
-  border-radius: 12px;
+.tarjeta {
+  background: #1e1e1e;
+  border-radius: 10px;
   padding: 20px;
-  text-align: center;
-  margin-bottom: 25px;
-  font-size: 1.3rem;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+#totalPuntos {
+  font-size: 2em;
+  color: #00e676;
+  margin: 10px 0;
 }
 
-th, td {
-  border: 1px solid #333;
+#listaHistorial {
+  list-style: none;
+  padding: 0;
+}
+
+#listaHistorial li {
   padding: 8px;
-  text-align: center;
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
 }
 
-th {
-  background-color: #222;
+#listaHistorial li:last-child {
+  border-bottom: none;
 }
 
-.dark-mode {
-  background-color: #fafafa;
-  color: #111;
+.positivo {
+  color: #00e676;
 }
 
-.dark-mode header {
-  background-color: #ddd;
-  border-color: #333;
-}
-
-.dark-mode nav button {
-  background-color: #222;
-  color: gold;
+.negativo {
+  color: #ff5252;
 }
