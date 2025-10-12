@@ -8,8 +8,8 @@ import {
   getFirestore,
   getDocs,
   collection,
-  doc,
-  getDoc
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -19,7 +19,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
   authDomain: "revolucionmx-308c2.firebaseapp.com",
   projectId: "revolucionmx-308c2",
-  storageBucket: "revolucionmx-308c2.firebasestorage.app",
+  storageBucket: "revolucionmx-308c2.appspot.com",
   messagingSenderId: "143264550141",
   appId: "1:143264550141:web:7e5425c2b75c5579d04294",
 };
@@ -28,39 +28,49 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔹 Elementos del DOM
+// 🔸 Elementos del DOM
 const logoutBtn = document.getElementById("logoutBtn");
 const modoBtn = document.getElementById("modoBtn");
 const homeBtn = document.getElementById("homeBtn");
 const recompensasBtn = document.getElementById("recompensasBtn");
-const nombreUsuario = document.getElementById("nombreUsuario");
-const totalPuntos = document.getElementById("totalPuntos");
+const nombreUsuarioEl = document.getElementById("nombreUsuario");
+const totalPuntosEl = document.getElementById("totalPuntos");
 const listaHistorial = document.getElementById("listaHistorial");
 
-// 🌙 Activar modo oscuro por defecto
+// 🌙 Modo oscuro activado por defecto
 document.body.classList.add("dark-mode");
 localStorage.setItem("modo", "oscuro");
 modoBtn.textContent = "☀️";
 
-// 🔹 Cambiar modo oscuro / claro
+// 🌗 Cambiar modo
 modoBtn?.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
   localStorage.setItem(
     "modo",
     document.body.classList.contains("dark-mode") ? "oscuro" : "claro"
   );
-  modoBtn.textContent = document.body.classList.contains("dark-mode")
-    ? "☀️"
-    : "🌙";
+  modoBtn.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
 });
 
-// 🔹 Cerrar sesión
+// 🚪 Cerrar sesión
 logoutBtn?.addEventListener("click", async () => {
   await signOut(auth);
   window.location.href = "index.html";
 });
 
-// 🔹 Verificar usuario activo
+// 🧍‍♂️ Obtener nombre desde colección "miembros"
+async function obtenerNombreUsuario(email) {
+  const miembrosRef = collection(db, "miembros");
+  const q = query(miembrosRef, where("email", "==", email));
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    const data = snapshot.docs[0].data();
+    return data.nombre || email;
+  }
+  return email;
+}
+
+// 🧍 Verificar usuario logueado
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Debes iniciar sesión primero.");
@@ -68,64 +78,51 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Buscar al miembro correspondiente
-  const miembrosSnap = await getDocs(collection(db, "miembros"));
-  let miembroDoc = null;
-  let nombre = null;
+  const emailUsuario = user.email;
+  const nombre = await obtenerNombreUsuario(emailUsuario);
+  nombreUsuarioEl.textContent = nombre;
 
-  miembrosSnap.forEach((docu) => {
+  await mostrarHistorial(emailUsuario);
+});
+
+// 📜 Mostrar historial desde "historialPuntos"
+async function mostrarHistorial(email) {
+  listaHistorial.innerHTML = "<li>Cargando historial...</li>";
+
+  const snapshot = await getDocs(collection(db, "historialPuntos"));
+  let total = 0;
+  const historialUsuario = [];
+
+  snapshot.forEach((docu) => {
     const data = docu.data();
-    if (data.email === user.email) {
-      miembroDoc = { id: docu.id, ...data };
-      nombre = data.nombre;
+    if (data.emailMiembro === email) {
+      historialUsuario.push(data);
+      total += data.puntos || 0;
     }
   });
 
-  if (!miembroDoc) {
-    alert("Tu perfil no tiene datos registrados.");
-    await signOut(auth);
-    window.location.href = "index.html";
+  totalPuntosEl.textContent = total;
+
+  if (historialUsuario.length === 0) {
+    listaHistorial.innerHTML = "<li>Aún no tienes movimientos de puntos.</li>";
     return;
   }
 
-  // Mostrar información
-  nombreUsuario.textContent = nombre;
-  totalPuntos.textContent = miembroDoc.puntos || 0;
-
-  mostrarHistorial(miembroDoc.id);
-});
-
-// 🔹 Mostrar historial de puntos
-async function mostrarHistorial(idMiembro) {
-  const miembroRef = doc(db, "miembros", idMiembro);
-  const miembroSnap = await getDoc(miembroRef);
-
-  if (!miembroSnap.exists()) {
-    listaHistorial.innerHTML = `<li>No se encontró historial.</li>`;
-    return;
-  }
-
-  const data = miembroSnap.data();
-  const historial = data.historialPuntos || [];
-
-  if (historial.length === 0) {
-    listaHistorial.innerHTML = `<li>Aún no tienes movimientos de puntos.</li>`;
-    return;
-  }
+  historialUsuario.sort((a, b) => b.fecha.seconds - a.fecha.seconds);
 
   listaHistorial.innerHTML = "";
-  historial.slice().reverse().forEach((mov) => {
+  historialUsuario.forEach((item) => {
+    const fecha = new Date(item.fecha.seconds * 1000).toLocaleString();
     const li = document.createElement("li");
     li.innerHTML = `
-      <strong>${mov.fecha || "Sin fecha"}:</strong> ${mov.descripcion} 
-      <span class="${mov.cambio > 0 ? 'positivo' : 'negativo'}">
-        ${mov.cambio > 0 ? "+" : ""}${mov.cambio}
-      </span>
+      <strong>+${item.puntos} pts</strong> — ${item.descripcion || "Sin descripción"}<br>
+      <span class="fecha">🕒 ${fecha}</span><br>
+      <span class="admin">👤 Admin: ${item.adminEmail || "Desconocido"}</span>
     `;
     listaHistorial.appendChild(li);
   });
 }
 
-// 🔹 Navegación
-homeBtn.addEventListener("click", () => window.location.href = "publicacionesMiembro.html");
-recompensasBtn.addEventListener("click", () => window.location.href = "recompensasMiembro.html");
+// 🧭 Navegación
+homeBtn?.addEventListener("click", () => window.location.href = "publicacionesMiembro.html");
+recompensasBtn?.addEventListener("click", () => window.location.href = "recompensasMiembro.html");

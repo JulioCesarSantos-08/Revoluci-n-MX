@@ -20,7 +20,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
   authDomain: "revolucionmx-308c2.firebaseapp.com",
   projectId: "revolucionmx-308c2",
-  storageBucket: "revolucionmx-308c2.firebasestorage.app",
+  storageBucket: "revolucionmx-308c2.appspot.com",
   messagingSenderId: "143264550141",
   appId: "1:143264550141:web:7e5425c2b75c5579d04294",
 };
@@ -101,7 +101,9 @@ async function mostrarPublicaciones(nombreUsuario) {
 
   publicacionesSnap.forEach((docu) => {
     const data = docu.data();
-    const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "Fecha no disponible";
+    const fecha = data.fecha
+      ? new Date(data.fecha.seconds * 1000).toLocaleString()
+      : "Fecha no disponible";
 
     const publicacionDiv = document.createElement("div");
     publicacionDiv.classList.add("publicacion");

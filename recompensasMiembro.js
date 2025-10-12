@@ -8,9 +8,11 @@ import {
   getFirestore,
   getDocs,
   collection,
-  doc,
-  getDoc,
-  updateDoc
+  query,
+  where,
+  addDoc,
+  updateDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -20,7 +22,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
   authDomain: "revolucionmx-308c2.firebaseapp.com",
   projectId: "revolucionmx-308c2",
-  storageBucket: "revolucionmx-308c2.firebasestorage.app",
+  storageBucket: "revolucionmx-308c2.appspot.com",
   messagingSenderId: "143264550141",
   appId: "1:143264550141:web:7e5425c2b75c5579d04294",
 };
@@ -29,29 +31,29 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔹 Elementos del DOM
+// 🌟 Elementos del DOM
 const logoutBtn = document.getElementById("logoutBtn");
 const modoBtn = document.getElementById("modoBtn");
 const homeBtn = document.getElementById("homeBtn");
 const puntosBtn = document.getElementById("puntosBtn");
-const nombreUsuario = document.getElementById("nombreUsuario");
-const totalPuntos = document.getElementById("totalPuntos");
-const listaRecompensas = document.getElementById("listaRecompensas");
+const nombreUsuarioEl = document.getElementById("nombreUsuario");
+const totalPuntosEl = document.getElementById("totalPuntos");
+const listaRecompensasEl = document.getElementById("listaRecompensas");
 
-// 🎟️ Modal
-const modal = document.getElementById("ticketModal");
-const cerrarTicket = document.getElementById("cerrarTicket");
+// Ticket modal
+const ticketModal = document.getElementById("ticketModal");
 const ticketNombre = document.getElementById("ticketNombre");
 const ticketRecompensa = document.getElementById("ticketRecompensa");
 const ticketFecha = document.getElementById("ticketFecha");
+const cerrarTicket = document.getElementById("cerrarTicket");
 
-// 🌙 Activar modo oscuro por defecto
+// 🌙 Modo oscuro activado por defecto
 document.body.classList.add("dark-mode");
 localStorage.setItem("modo", "oscuro");
 modoBtn.textContent = "☀️";
 
-// 🔹 Cambiar modo oscuro / claro
-modoBtn.addEventListener("click", () => {
+// 🌗 Cambiar modo
+modoBtn?.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
   localStorage.setItem(
     "modo",
@@ -60,13 +62,98 @@ modoBtn.addEventListener("click", () => {
   modoBtn.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
 });
 
-// 🔹 Cerrar sesión
-logoutBtn.addEventListener("click", async () => {
+// 🚪 Cerrar sesión
+logoutBtn?.addEventListener("click", async () => {
   await signOut(auth);
   window.location.href = "index.html";
 });
 
-// 🔹 Detectar sesión activa
+// 🧍 Obtener nombre y puntos
+async function obtenerMiembro(email) {
+  const q = query(collection(db, "miembros"), where("email", "==", email));
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    const docu = snapshot.docs[0];
+    return { id: docu.id, ...docu.data() };
+  }
+  return null;
+}
+
+// 🎁 Recompensas inventadas (puedes editarlas luego)
+const recompensas = [
+  { nombre: "Taza personalizada", costo: 50 },
+  { nombre: "Gorra oficial", costo: 80 },
+  { nombre: "Playera Revolución MX", costo: 120 },
+  { nombre: "Acceso VIP a evento", costo: 200 },
+  { nombre: "Sticker pack", costo: 30 }
+];
+
+// 🧾 Mostrar recompensas
+function mostrarRecompensas(miembro) {
+  listaRecompensasEl.innerHTML = "";
+  recompensas.forEach((r) => {
+    const card = document.createElement("div");
+    card.classList.add("recompensa-card");
+    card.innerHTML = `
+      <h3>${r.nombre}</h3>
+      <p>💰 Costo: ${r.costo} puntos</p>
+      <button class="canjearBtn" ${miembro.puntos < r.costo ? "disabled" : ""}>
+        Canjear
+      </button>
+    `;
+
+    const btn = card.querySelector(".canjearBtn");
+    btn.addEventListener("click", () => canjearRecompensa(r, miembro));
+
+    listaRecompensasEl.appendChild(card);
+  });
+}
+
+// 🪙 Canjear recompensa
+async function canjearRecompensa(recompensa, miembro) {
+  if (miembro.puntos < recompensa.costo) {
+    alert("No tienes suficientes puntos para esta recompensa.");
+    return;
+  }
+
+  const confirmar = confirm(
+    `¿Seguro que quieres canjear "${recompensa.nombre}" por ${recompensa.costo} puntos?`
+  );
+  if (!confirmar) return;
+
+  // ✨ Actualizar puntos
+  const nuevosPuntos = miembro.puntos - recompensa.costo;
+  await updateDoc(doc(db, "miembros", miembro.id), { puntos: nuevosPuntos });
+
+  // 🧾 Crear ticket en Firestore
+  const fecha = new Date();
+  await addDoc(collection(db, "ticketsCanje"), {
+    emailMiembro: miembro.email,
+    nombreMiembro: miembro.nombre,
+    recompensa: recompensa.nombre,
+    costo: recompensa.costo,
+    fecha: fecha,
+    estado: "pendiente" // luego los admins pueden validarlo
+  });
+
+  // 🪪 Mostrar ticket en modal
+  ticketNombre.textContent = miembro.nombre;
+  ticketRecompensa.textContent = recompensa.nombre;
+  ticketFecha.textContent = fecha.toLocaleString();
+  ticketModal.classList.remove("oculto");
+
+  // 🆙 Actualizar puntos mostrados y botones
+  miembro.puntos = nuevosPuntos;
+  totalPuntosEl.textContent = nuevosPuntos;
+  mostrarRecompensas(miembro);
+}
+
+// ❌ Cerrar modal
+cerrarTicket.addEventListener("click", () => {
+  ticketModal.classList.add("oculto");
+});
+
+// 🧍 Verificar sesión
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Debes iniciar sesión primero.");
@@ -74,93 +161,20 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  const miembrosSnap = await getDocs(collection(db, "miembros"));
-  let miembroDoc = null;
-
-  miembrosSnap.forEach((docu) => {
-    const data = docu.data();
-    if (data.email === user.email) {
-      miembroDoc = { id: docu.id, ...data };
-    }
-  });
-
-  if (!miembroDoc) {
-    alert("Tu perfil no tiene datos registrados.");
+  const miembro = await obtenerMiembro(user.email);
+  if (!miembro) {
+    alert("Tu perfil no está registrado.");
     await signOut(auth);
     window.location.href = "index.html";
     return;
   }
 
-  nombreUsuario.textContent = miembroDoc.nombre;
-  totalPuntos.textContent = miembroDoc.puntos || 0;
+  nombreUsuarioEl.textContent = miembro.nombre;
+  totalPuntosEl.textContent = miembro.puntos || 0;
 
-  cargarRecompensas(miembroDoc);
+  mostrarRecompensas(miembro);
 });
 
-// 🔹 Cargar recompensas desde Firestore
-async function cargarRecompensas(miembro) {
-  const recompensasSnap = await getDocs(collection(db, "recompensas"));
-  listaRecompensas.innerHTML = "";
-
-  recompensasSnap.forEach((docu) => {
-    const data = docu.data();
-
-    const card = document.createElement("div");
-    card.className = "recompensa";
-
-    const puedeCanjear = miembro.puntos >= data.puntos;
-
-    card.innerHTML = `
-      <img src="${data.imagen}" alt="${data.nombre}">
-      <h3>${data.nombre}</h3>
-      <p>${data.descripcion}</p>
-      <p class="puntos">💎 ${data.puntos} puntos</p>
-      <button ${!puedeCanjear ? "disabled" : ""}>Canjear</button>
-    `;
-
-    const btn = card.querySelector("button");
-    btn.addEventListener("click", () => canjearRecompensa(miembro, docu.id, data));
-
-    listaRecompensas.appendChild(card);
-  });
-}
-
-// 🔹 Canjear recompensa
-async function canjearRecompensa(miembro, recompensaId, data) {
-  if (miembro.puntos < data.puntos) {
-    alert("No tienes suficientes puntos para esta recompensa.");
-    return;
-  }
-
-  const nuevoTotal = miembro.puntos - data.puntos;
-
-  const miembroRef = doc(db, "miembros", miembro.id);
-  await updateDoc(miembroRef, {
-    puntos: nuevoTotal,
-    historialPuntos: [
-      ...(miembro.historialPuntos || []),
-      {
-        fecha: new Date().toLocaleString(),
-        descripcion: `Canjeó "${data.nombre}"`,
-        cambio: -data.puntos
-      }
-    ]
-  });
-
-  totalPuntos.textContent = nuevoTotal;
-  mostrarTicket(miembro.nombre, data.nombre);
-}
-
-// 🎟️ Mostrar ticket
-function mostrarTicket(nombre, recompensa) {
-  ticketNombre.textContent = nombre;
-  ticketRecompensa.textContent = recompensa;
-  ticketFecha.textContent = new Date().toLocaleString();
-  modal.classList.remove("oculto");
-}
-
-cerrarTicket.addEventListener("click", () => modal.classList.add("oculto"));
-
-// 🔹 Navegación
-homeBtn.addEventListener("click", () => window.location.href = "publicacionesMiembro.html");
-puntosBtn.addEventListener("click", () => window.location.href = "puntosMiembro.html");
+// 🧭 Navegación
+homeBtn?.addEventListener("click", () => window.location.href = "publicacionesMiembro.html");
+puntosBtn?.addEventListener("click", () => window.location.href = "puntosMiembro.html");

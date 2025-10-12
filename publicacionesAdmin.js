@@ -1,46 +1,49 @@
-// Arreglo para almacenar publicaciones temporalmente
-let publicaciones = JSON.parse(localStorage.getItem("publicaciones")) || [];
+// ============================
+// 🔥 Configuración de Firebase
+// ============================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Elementos del DOM
+const firebaseConfig = {
+  apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
+  authDomain: "revolucionmx-308c2.firebaseapp.com",
+  databaseURL: "https://revolucionmx-308c2-default-rtdb.firebaseio.com",
+  projectId: "revolucionmx-308c2",
+  storageBucket: "revolucionmx-308c2.appspot.com",
+  messagingSenderId: "143264550141",
+  appId: "1:143264550141:web:7e5425c2b75c5579d04294"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ============================
+// 📢 Lógica de publicaciones
+// ============================
 const form = document.getElementById("publicacionForm");
 const container = document.getElementById("publicacionesContainer");
+const publicacionesRef = collection(db, "publicaciones");
 
-// Mostrar publicaciones guardadas al cargar la página
-mostrarPublicaciones();
-
-// Evento para agregar nueva publicación
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  
-  const titulo = document.getElementById("titulo").value.trim();
-  const contenido = document.getElementById("contenidoPub").value.trim();
-  const imagen = document.getElementById("imagenNombre").value.trim();
-
-  if (!titulo || !contenido || !imagen) return alert("Por favor llena todos los campos.");
-
-  const nuevaPublicacion = {
-    id: Date.now(),
-    titulo,
-    contenido,
-    imagen
-  };
-
-  publicaciones.push(nuevaPublicacion);
-  guardarEnLocalStorage();
-  mostrarPublicaciones();
-  form.reset();
-});
-
-// Función para mostrar publicaciones
-function mostrarPublicaciones() {
+// 📌 Escuchar publicaciones en tiempo real
+onSnapshot(publicacionesRef, (snapshot) => {
   container.innerHTML = "";
-
-  if (publicaciones.length === 0) {
+  if (snapshot.empty) {
     container.innerHTML = "<p>No hay publicaciones aún.</p>";
     return;
   }
 
-  publicaciones.forEach((pub) => {
+  snapshot.forEach((docSnap) => {
+    const pub = docSnap.data();
+    const id = docSnap.id;
     const div = document.createElement("div");
     div.classList.add("publicacion");
 
@@ -49,42 +52,67 @@ function mostrarPublicaciones() {
       <img src="imagen/${pub.imagen}" alt="${pub.titulo}">
       <p>${pub.contenido}</p>
       <div class="acciones">
-        <button onclick="editarPublicacion(${pub.id})">✏️ Editar</button>
-        <button onclick="eliminarPublicacion(${pub.id})">🗑️ Eliminar</button>
+        <button onclick="editarPublicacion('${id}', '${pub.titulo}', '${pub.contenido}', '${pub.imagen}')">✏️ Editar</button>
+        <button onclick="eliminarPublicacion('${id}')">🗑️ Eliminar</button>
       </div>
     `;
     container.appendChild(div);
   });
-}
+});
 
-// Guardar en localStorage
-function guardarEnLocalStorage() {
-  localStorage.setItem("publicaciones", JSON.stringify(publicaciones));
-}
+// 📝 Agregar nueva publicación
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-// Función para eliminar publicación
-function eliminarPublicacion(id) {
-  if (confirm("¿Seguro que deseas eliminar esta publicación?")) {
-    publicaciones = publicaciones.filter((pub) => pub.id !== id);
-    guardarEnLocalStorage();
-    mostrarPublicaciones();
+  const titulo = document.getElementById("titulo").value.trim();
+  const contenido = document.getElementById("contenidoPub").value.trim();
+  const imagen = document.getElementById("imagenNombre").value.trim();
+
+  if (!titulo || !contenido || !imagen) return alert("Por favor llena todos los campos.");
+
+  try {
+    await addDoc(publicacionesRef, {
+      titulo,
+      contenido,
+      imagen,
+      fecha: new Date().toISOString()
+    });
+    form.reset();
+  } catch (error) {
+    console.error("Error al subir publicación:", error);
+    alert("Ocurrió un error al subir la publicación.");
   }
-}
+});
 
-// Función para editar publicación
-function editarPublicacion(id) {
-  const pub = publicaciones.find((p) => p.id === id);
-  if (!pub) return;
+// 🗑️ Eliminar publicación
+window.eliminarPublicacion = async (id) => {
+  if (confirm("¿Seguro que deseas eliminar esta publicación?")) {
+    try {
+      await deleteDoc(doc(db, "publicaciones", id));
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Ocurrió un error al eliminar.");
+    }
+  }
+};
 
-  const nuevoTitulo = prompt("Nuevo título:", pub.titulo);
-  const nuevoContenido = prompt("Nuevo contenido:", pub.contenido);
-  const nuevaImagen = prompt("Nuevo nombre de imagen:", pub.imagen);
+// ✏️ Editar publicación
+window.editarPublicacion = async (id, tituloActual, contenidoActual, imagenActual) => {
+  const nuevoTitulo = prompt("Nuevo título:", tituloActual);
+  const nuevoContenido = prompt("Nuevo contenido:", contenidoActual);
+  const nuevaImagen = prompt("Nuevo nombre de imagen:", imagenActual);
 
   if (nuevoTitulo && nuevoContenido && nuevaImagen) {
-    pub.titulo = nuevoTitulo.trim();
-    pub.contenido = nuevoContenido.trim();
-    pub.imagen = nuevaImagen.trim();
-    guardarEnLocalStorage();
-    mostrarPublicaciones();
+    try {
+      const ref = doc(db, "publicaciones", id);
+      await updateDoc(ref, {
+        titulo: nuevoTitulo.trim(),
+        contenido: nuevoContenido.trim(),
+        imagen: nuevaImagen.trim()
+      });
+    } catch (error) {
+      console.error("Error al editar:", error);
+      alert("Ocurrió un error al editar la publicación.");
+    }
   }
-}
+};
