@@ -1,85 +1,92 @@
 body {
-  font-family: "Poppins", sans-serif;
-  background-color: #121212;
-  color: #fff;
+  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
+  transition: background 0.3s, color 0.3s;
 }
 
 header {
-  background: #1e1e1e;
-  padding: 10px;
+  background: #222;
+  color: #fff;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-header h1 {
-  font-size: 1.4em;
-}
-
-nav button {
-  background: #333;
-  border: none;
-  color: white;
-  margin: 0 5px;
-  padding: 8px 12px;
-  border-radius: 8px;
+header nav button {
+  margin-left: 0.5rem;
   cursor: pointer;
+  background: #444;
+  color: #fff;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 5px;
+  transition: 0.2s;
+}
+header nav button:hover {
+  background: #666;
 }
 
-nav button:hover {
-  background: #555;
+.dark-mode {
+  background: #121212;
+  color: #eee;
 }
 
 main {
-  padding: 20px;
-}
-
-.saludo {
-  background: #222;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+  padding: 1rem;
 }
 
 .publicacion {
   background: #1e1e1e;
   border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
 .publicacion img {
   width: 100%;
-  border-radius: 10px;
-  margin: 10px 0;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.header-post {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #aaa;
 }
 
 .acciones {
-  display: flex;
-  gap: 10px;
+  margin-top: 0.5rem;
 }
 
 .acciones button {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
   background: #333;
+  color: #fff;
   border: none;
-  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  margin-right: 0.5rem;
   cursor: pointer;
-  transition: background 0.2s;
 }
-
 .acciones button:hover {
-  background: #444;
+  background: #555;
 }
 
 .comentarios {
-  margin-top: 10px;
-  font-size: 0.9em;
+  margin-top: 0.8rem;
   border-top: 1px solid #333;
-  padding-top: 5px;
+  padding-top: 0.5rem;
+}
+
+.comentarios p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+.sin-posts {
+  text-align: center;
+  color: #aaa;
+  margin-top: 2rem;
 }

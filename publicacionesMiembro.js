@@ -37,30 +37,28 @@ const homeBtn = document.getElementById("homeBtn");
 const puntosBtn = document.getElementById("puntosBtn");
 const recompensasBtn = document.getElementById("recompensasBtn");
 
-// 🔹 Activar modo oscuro por defecto
+// 🌙 Modo oscuro por defecto
 document.body.classList.add("dark-mode");
 localStorage.setItem("modo", "oscuro");
 modoBtn.textContent = "☀️";
 
-// 🔹 Cambiar modo oscuro / claro
+// 🌗 Cambiar modo
 modoBtn?.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
   localStorage.setItem(
     "modo",
     document.body.classList.contains("dark-mode") ? "oscuro" : "claro"
   );
-  modoBtn.textContent = document.body.classList.contains("dark-mode")
-    ? "☀️"
-    : "🌙";
+  modoBtn.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
 });
 
-// 🔹 Cerrar sesión
+// 🚪 Cerrar sesión
 logoutBtn?.addEventListener("click", async () => {
   await signOut(auth);
   window.location.href = "index.html";
 });
 
-// 🔹 Sesión activa
+// 🧍‍♂️ Verificar sesión
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Debes iniciar sesión primero.");
@@ -68,15 +66,12 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Buscar nombre en colección miembros
+  // Obtener nombre del usuario logueado
   const miembrosSnap = await getDocs(collection(db, "miembros"));
   let nombreMiembro = null;
-
   miembrosSnap.forEach((docu) => {
     const data = docu.data();
-    if (data.email === user.email) {
-      nombreMiembro = data.nombre;
-    }
+    if (data.email === user.email) nombreMiembro = data.nombre;
   });
 
   if (!nombreMiembro) {
@@ -86,16 +81,15 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Mostrar publicaciones
   mostrarPublicaciones(nombreMiembro);
 });
 
-// 🔹 Mostrar publicaciones
+// 📰 Mostrar publicaciones
 async function mostrarPublicaciones(nombreUsuario) {
   contenido.innerHTML = `
     <section class="saludo">
       <h2>👋 Hola <span class="nombre">${nombreUsuario}</span>, bienvenido</h2>
-      <p>Aquí puedes ver las publicaciones de la comunidad.</p>
+      <p>Aquí puedes ver y reaccionar a las publicaciones de la comunidad.</p>
     </section>
   `;
 
@@ -107,12 +101,18 @@ async function mostrarPublicaciones(nombreUsuario) {
 
   publicacionesSnap.forEach((docu) => {
     const data = docu.data();
+    const fecha = data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "Fecha no disponible";
+
     const publicacionDiv = document.createElement("div");
     publicacionDiv.classList.add("publicacion");
 
     publicacionDiv.innerHTML = `
+      <div class="header-post">
+        <strong>${data.autor || "Anónimo"}</strong>
+        <span class="fecha">${fecha}</span>
+      </div>
       <h3>${data.titulo}</h3>
-      <img src="${data.imagen || "imagenes/default.png"}" alt="${data.titulo}" />
+      ${data.imagen ? `<img src="${data.imagen}" alt="${data.titulo}">` : ""}
       <p>${data.descripcion}</p>
 
       <div class="acciones">
@@ -120,7 +120,11 @@ async function mostrarPublicaciones(nombreUsuario) {
         <button class="comentarBtn">💬 Comentar</button>
       </div>
 
-      <div class="comentarios"></div>
+      <div class="comentarios">
+        ${(data.comentarios || [])
+          .map(c => `<p><strong>${c.usuario}:</strong> ${c.texto}</p>`)
+          .join("")}
+      </div>
     `;
 
     // ❤️ Like
@@ -133,13 +137,17 @@ async function mostrarPublicaciones(nombreUsuario) {
 
     // 💬 Comentar
     const comentarBtn = publicacionDiv.querySelector(".comentarBtn");
+    const comentariosDiv = publicacionDiv.querySelector(".comentarios");
     comentarBtn.addEventListener("click", async () => {
       const comentario = prompt("Escribe tu comentario:");
       if (comentario) {
+        const nuevoComentario = { usuario: nombreUsuario, texto: comentario };
         await updateDoc(doc(db, "publicaciones", docu.id), {
-          comentarios: arrayUnion({ usuario: nombreUsuario, texto: comentario }),
+          comentarios: arrayUnion(nuevoComentario),
         });
-        alert("Comentario agregado 👍");
+        const nuevoP = document.createElement("p");
+        nuevoP.innerHTML = `<strong>${nuevoComentario.usuario}:</strong> ${nuevoComentario.texto}`;
+        comentariosDiv.appendChild(nuevoP);
       }
     });
 
@@ -147,7 +155,7 @@ async function mostrarPublicaciones(nombreUsuario) {
   });
 }
 
-// 🔹 Navegación
+// 🧭 Navegación
 homeBtn?.addEventListener("click", () => window.location.href = "publicacionesMiembro.html");
 puntosBtn?.addEventListener("click", () => window.location.href = "puntosMiembro.html");
 recompensasBtn?.addEventListener("click", () => window.location.href = "recompensasMiembro.html");

@@ -1,9 +1,16 @@
+/* ====== Sección principal ====== */
 section {
   background-color: #1a1a1a;
   padding: 20px;
   margin-top: 20px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
+}
+
+h2 {
+  color: #00b4ff;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 form label {
@@ -13,7 +20,7 @@ form label {
   color: #00b4ff;
 }
 
-form input, form select {
+form input, form select, form textarea {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
@@ -21,6 +28,10 @@ form input, form select {
   border: none;
   background-color: #2a2a2a;
   color: #fff;
+}
+
+form textarea {
+  resize: vertical;
 }
 
 button.submit {
@@ -39,4 +50,28 @@ button.submit {
 button.submit:hover {
   background: linear-gradient(90deg, #0084ff, #00b4ff);
   transform: scale(1.05);
+}
+
+/* ====== Historial ====== */
+#historialPuntos {
+  margin-top: 20px;
+}
+
+.registro {
+  background-color: #2a2a2a;
+  border: 1px solid #00b4ff;
+  color: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 180, 255, 0.2);
+}
+
+.registro p {
+  margin: 5px 0;
+  color: #ddd;
+}
+
+.registro strong {
+  color: #00b4ff;
 }

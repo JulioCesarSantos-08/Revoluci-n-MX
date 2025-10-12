@@ -1,12 +1,36 @@
-<section>
-  <h2>📰 Subir publicación</h2>
-  <form id="publicacionForm">
-    <label for="titulo">Título</label>
-    <input type="text" id="titulo" placeholder="Título de la publicación" required>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Publicaciones - Admin</title>
+  <link rel="stylesheet" href="publicacionesAdmin.css">
+</head>
+<body>
+  <header>
+    <h1>📰 Panel de Publicaciones (Admin)</h1>
+  </header>
 
-    <label for="contenidoPub">Contenido</label>
-    <textarea id="contenidoPub" rows="5" placeholder="Escribe la publicación..." required></textarea>
+  <section class="formulario">
+    <h2>Subir publicación</h2>
+    <form id="publicacionForm">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" placeholder="Título de la publicación" required>
 
-    <button type="submit" class="submit">Publicar</button>
-  </form>
-</section>
+      <label for="contenidoPub">Contenido</label>
+      <textarea id="contenidoPub" rows="5" placeholder="Escribe la publicación..." required></textarea>
+
+      <label for="imagenNombre">Nombre de la imagen (en carpeta "imagen")</label>
+      <input type="text" id="imagenNombre" placeholder="ej. evolucion1.png" required>
+
+      <button type="submit" class="submit">Publicar</button>
+    </form>
+  </section>
+
+  <section class="listaPublicaciones">
+    <h2>📢 Publicaciones existentes</h2>
+    <div id="publicacionesContainer"></div>
+  </section>
+
+  <script src="publicacionesAdmin.js"></script>
+</body>
+</html>

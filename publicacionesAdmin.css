@@ -1,3 +1,4 @@
+/* ====== Sección principal ====== */
 section {
   background-color: #1a1a1a;
   padding: 20px;
@@ -6,6 +7,13 @@ section {
   box-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
 }
 
+h2 {
+  color: #00b4ff;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* ====== Formulario ====== */
 form label {
   display: block;
   margin-top: 10px;
@@ -13,7 +21,8 @@ form label {
   color: #00b4ff;
 }
 
-form input, form textarea {
+form input,
+form textarea {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
@@ -43,4 +52,68 @@ button.submit {
 button.submit:hover {
   background: linear-gradient(90deg, #0084ff, #00b4ff);
   transform: scale(1.05);
+}
+
+/* ====== Lista de publicaciones ====== */
+#publicacionesContainer {
+  margin-top: 20px;
+}
+
+.publicacion {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #00b4ff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 180, 255, 0.2);
+}
+
+.publicacion h3 {
+  color: #00b4ff;
+  margin-top: 0;
+}
+
+.publicacion img {
+  max-width: 100%;
+  display: block;
+  margin: 10px 0;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 180, 255, 0.3);
+}
+
+.publicacion p {
+  color: #ddd;
+  line-height: 1.4;
+}
+
+/* ====== Botones editar y eliminar ====== */
+.acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.acciones button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+
+.acciones button:first-child {
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.acciones button:last-child {
+  background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+.acciones button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
 }
