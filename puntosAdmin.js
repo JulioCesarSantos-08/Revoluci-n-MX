@@ -1,9 +1,10 @@
-import { 
-  getAuth, onAuthStateChanged, signOut 
+import {
+  getAuth, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import { 
-  getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, serverTimestamp, query, orderBy 
+import {
+  getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, serverTimestamp,
+  query, orderBy, deleteDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -12,7 +13,6 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12
 const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
   authDomain: "revolucionmx-308c2.firebaseapp.com",
-  databaseURL: "https://revolucionmx-308c2-default-rtdb.firebaseio.com",
   projectId: "revolucionmx-308c2",
   storageBucket: "revolucionmx-308c2.appspot.com",
   messagingSenderId: "143264550141",
@@ -32,6 +32,7 @@ const admins = [
 
 let adminEmail = "";
 
+// 🔒 Verificar autenticación
 onAuthStateChanged(auth, (user) => {
   if (!user || !admins.includes(user.email)) {
     alert("⚠️ Acceso denegado.");
@@ -50,7 +51,7 @@ document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   window.location.href = "index.html";
 });
 
-// 👥 Cargar miembros al select (solo nombre visible)
+// 👥 Cargar miembros
 async function cargarMiembros() {
   const select = document.getElementById("emailMiembro");
   select.innerHTML = `<option value="">Cargando miembros...</option>`;
@@ -61,8 +62,8 @@ async function cargarMiembros() {
   miembrosSnap.forEach((docSnap) => {
     const data = docSnap.data();
     const option = document.createElement("option");
-    option.value = data.email; // 🔸 el valor interno sigue siendo el correo
-    option.textContent = data.nombre || data.email; // 🔸 visible solo el nombre
+    option.value = data.email;
+    option.textContent = data.nombre || data.email;
     select.appendChild(option);
   });
 }
@@ -114,9 +115,13 @@ async function cargarHistorial() {
   contenedor.innerHTML = "";
   for (const docSnap of snap.docs) {
     const data = docSnap.data();
+    const id = docSnap.id;
     const fecha = data.fecha?.toDate().toLocaleString() || "Sin fecha";
+    const ultimaEdicion = data.ultimaEdicion
+      ? `<p class="editado">🕓 Última edición: ${data.ultimaEdicion.toDate().toLocaleString()}</p>`
+      : "";
 
-    // 📌 obtener nombre del miembro a partir del correo
+    // 🔹 obtener nombre del miembro
     let nombreMiembro = data.emailMiembro;
     const miembroDoc = await getDoc(doc(db, "miembros", data.emailMiembro));
     if (miembroDoc.exists()) {
@@ -132,8 +137,47 @@ async function cargarHistorial() {
       <p><strong>📝 Motivo:</strong> ${data.descripcion}</p>
       <p><strong>👮‍♂️ Asignado por:</strong> ${data.adminEmail}</p>
       <p><strong>🕒 Fecha:</strong> ${fecha}</p>
+      ${ultimaEdicion}
+      <div class="acciones">
+        <button class="editar" data-id="${id}">✏️ Editar</button>
+        <button class="eliminar" data-id="${id}">🗑️ Eliminar</button>
+      </div>
     `;
 
     contenedor.appendChild(div);
   }
+
+  // 🗑️ Eliminar registro
+  document.querySelectorAll(".eliminar").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (confirm("¿Eliminar este registro de puntos?")) {
+        await deleteDoc(doc(db, "historialPuntos", btn.dataset.id));
+        alert("🗑️ Registro eliminado correctamente");
+        cargarHistorial();
+      }
+    });
+  });
+
+  // ✏️ Editar registro
+  document.querySelectorAll(".editar").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const docRef = doc(db, "historialPuntos", btn.dataset.id);
+      const snap = await getDoc(docRef);
+      if (!snap.exists()) return;
+
+      const datos = snap.data();
+      const nuevoMotivo = prompt("Editar motivo:", datos.descripcion);
+      const nuevosPuntos = prompt("Editar cantidad de puntos:", datos.puntos);
+
+      if (nuevoMotivo && nuevosPuntos) {
+        await updateDoc(docRef, {
+          descripcion: nuevoMotivo,
+          puntos: Number(nuevosPuntos),
+          ultimaEdicion: serverTimestamp()
+        });
+        alert("✅ Registro actualizado correctamente");
+        cargarHistorial();
+      }
+    });
+  });
 }

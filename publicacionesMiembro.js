@@ -10,7 +10,10 @@ import {
   collection,
   doc,
   updateDoc,
-  arrayUnion
+  arrayUnion,
+  arrayRemove,
+  getDoc,
+  increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -40,7 +43,7 @@ const recompensasBtn = document.getElementById("recompensasBtn");
 // 🌙 Modo oscuro por defecto
 document.body.classList.add("dark-mode");
 localStorage.setItem("modo", "oscuro");
-modoBtn.textContent = "☀️";
+if (modoBtn) modoBtn.textContent = "☀️";
 
 // 🌗 Cambiar modo
 modoBtn?.addEventListener("click", () => {
@@ -81,11 +84,11 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  mostrarPublicaciones(nombreMiembro);
+  mostrarPublicaciones(nombreMiembro, user.email);
 });
 
 // 📰 Mostrar publicaciones
-async function mostrarPublicaciones(nombreUsuario) {
+async function mostrarPublicaciones(nombreUsuario, emailUsuario) {
   contenido.innerHTML = `
     <section class="saludo">
       <h2>👋 Hola <span class="nombre">${nombreUsuario}</span>, bienvenido</h2>
@@ -101,24 +104,37 @@ async function mostrarPublicaciones(nombreUsuario) {
 
   publicacionesSnap.forEach((docu) => {
     const data = docu.data();
-    const fecha = data.fecha
-      ? new Date(data.fecha.seconds * 1000).toLocaleString()
-      : "Fecha no disponible";
+
+    // Manejo seguro de fecha: si fue guardada como timestamp de Firestore
+    let fecha = "Fecha no disponible";
+    if (data.fecha) {
+      try {
+        // Si es timestamp de Firestore
+        fecha = new Date(data.fecha.seconds * 1000).toLocaleString();
+      } catch (e) {
+        // Si es string
+        fecha = String(data.fecha);
+      }
+    }
 
     const publicacionDiv = document.createElement("div");
     publicacionDiv.classList.add("publicacion");
+
+    const usuariosLikes = Array.isArray(data.usuariosLikes) ? data.usuariosLikes : [];
+    const likesIniciales = typeof data.likes === "number" ? data.likes : usuariosLikes.length;
+    const yaDioLike = usuariosLikes.includes(emailUsuario);
 
     publicacionDiv.innerHTML = `
       <div class="header-post">
         <strong>${data.autor || "Anónimo"}</strong>
         <span class="fecha">${fecha}</span>
       </div>
-      <h3>${data.titulo}</h3>
+      <h3>${data.titulo || ""}</h3>
       ${data.imagen ? `<img src="${data.imagen}" alt="${data.titulo}">` : ""}
-      <p>${data.descripcion}</p>
+      <p>${data.descripcion || ""}</p>
 
       <div class="acciones">
-        <button class="likeBtn">❤️ ${data.likes || 0}</button>
+        <button class="likeBtn">${yaDioLike ? "💔 Quitar Like" : "❤️ Me gusta"} (${likesIniciales})</button>
         <button class="comentarBtn">💬 Comentar</button>
       </div>
 
@@ -129,27 +145,65 @@ async function mostrarPublicaciones(nombreUsuario) {
       </div>
     `;
 
-    // ❤️ Like
+    // ❤️ Toggle Like con lectura fresca y update atomico (increment + arrayUnion/arrayRemove)
     const likeBtn = publicacionDiv.querySelector(".likeBtn");
     likeBtn.addEventListener("click", async () => {
-      const newLikes = (data.likes || 0) + 1;
-      await updateDoc(doc(db, "publicaciones", docu.id), { likes: newLikes });
-      likeBtn.textContent = `❤️ ${newLikes}`;
+      try {
+        const postRef = doc(db, "publicaciones", docu.id);
+
+        // Leer el documento más reciente
+        const freshSnap = await getDoc(postRef);
+        if (!freshSnap.exists()) return;
+        const fresh = freshSnap.data();
+        const usuariosLikesFresh = Array.isArray(fresh.usuariosLikes) ? fresh.usuariosLikes : [];
+        const likesFresh = typeof fresh.likes === "number" ? fresh.likes : usuariosLikesFresh.length;
+
+        if (usuariosLikesFresh.includes(emailUsuario)) {
+          // quitar like
+          await updateDoc(postRef, {
+            usuariosLikes: arrayRemove(emailUsuario),
+            likes: increment(-1)
+          });
+        } else {
+          // agregar like
+          await updateDoc(postRef, {
+            usuariosLikes: arrayUnion(emailUsuario),
+            likes: increment(1)
+          });
+        }
+
+        // volver a leer el post para mostrar el estado actualizado
+        const updatedSnap = await getDoc(postRef);
+        const updated = updatedSnap.exists() ? updatedSnap.data() : null;
+        const updatedLikes = updated ? (typeof updated.likes === "number" ? updated.likes : (Array.isArray(updated.usuariosLikes) ? updated.usuariosLikes.length : 0)) : 0;
+        const updatedUsuariosLikes = updated && Array.isArray(updated.usuariosLikes) ? updated.usuariosLikes : [];
+        const ahoraDio = updatedUsuariosLikes.includes(emailUsuario);
+
+        likeBtn.textContent = `${ahoraDio ? "💔 Quitar Like" : "❤️ Me gusta"} (${updatedLikes})`;
+      } catch (err) {
+        console.error("Error toggle like:", err);
+        alert("No se pudo actualizar el like. Intenta de nuevo.");
+      }
     });
 
-    // 💬 Comentar
+    // 💬 Comentar (igual que antes)
     const comentarBtn = publicacionDiv.querySelector(".comentarBtn");
     const comentariosDiv = publicacionDiv.querySelector(".comentarios");
     comentarBtn.addEventListener("click", async () => {
       const comentario = prompt("Escribe tu comentario:");
       if (comentario) {
         const nuevoComentario = { usuario: nombreUsuario, texto: comentario };
-        await updateDoc(doc(db, "publicaciones", docu.id), {
-          comentarios: arrayUnion(nuevoComentario),
-        });
-        const nuevoP = document.createElement("p");
-        nuevoP.innerHTML = `<strong>${nuevoComentario.usuario}:</strong> ${nuevoComentario.texto}`;
-        comentariosDiv.appendChild(nuevoP);
+        try {
+          await updateDoc(doc(db, "publicaciones", docu.id), {
+            comentarios: arrayUnion(nuevoComentario),
+          });
+          const nuevoP = document.createElement("p");
+          nuevoP.innerHTML = `<strong>${nuevoComentario.usuario}:</strong> ${nuevoComentario.texto}`;
+          comentariosDiv.appendChild(nuevoP);
+        } catch (err) {
+          console.error("Error agregando comentario:", err);
+          alert("No se pudo agregar el comentario.");
+        }
       }
     });
 

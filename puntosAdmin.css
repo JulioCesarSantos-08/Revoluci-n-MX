@@ -1,77 +1,172 @@
-/* ====== Sección principal ====== */
+/* ===== Estilos generales ===== */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #0d0d0d;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* Secciones */
 section {
-  background-color: #1a1a1a;
+  margin: 25px auto;
   padding: 20px;
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
+  max-width: 900px;
+  background: #111;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
 }
 
+/* Títulos */
 h2 {
-  color: #00b4ff;
-  margin-bottom: 10px;
+  color: gold;
   text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
 }
 
-form label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #00b4ff;
+/* ===== Formulario ===== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-form input, form select, form textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border-radius: 6px;
-  border: none;
-  background-color: #2a2a2a;
-  color: #fff;
-}
-
+form input,
+form select,
 form textarea {
-  resize: vertical;
-}
-
-button.submit {
-  margin-top: 15px;
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(90deg, #00b4ff, #0084ff);
+  background: #1b1b1b;
   color: #fff;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 10px;
+  transition: 0.3s;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+  border-color: gold;
+  outline: none;
+  box-shadow: 0 0 8px gold;
+}
+
+form button.submit {
+  background: gold;
+  color: black;
   font-weight: bold;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
 }
 
-button.submit:hover {
-  background: linear-gradient(90deg, #0084ff, #00b4ff);
-  transform: scale(1.05);
+form button.submit:hover {
+  background: #ffd700;
+  transform: scale(1.03);
 }
 
-/* ====== Historial ====== */
+/* ===== Historial ===== */
 #historialPuntos {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   margin-top: 20px;
 }
 
+/* ===== Cada tarjeta de registro ===== */
 .registro {
-  background-color: #2a2a2a;
-  border: 1px solid #00b4ff;
-  color: #fff;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 180, 255, 0.2);
+  background: linear-gradient(145deg, #141414, #0b0b0b);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 15px;
+  padding: 18px;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.registro:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
 }
 
 .registro p {
-  margin: 5px 0;
-  color: #ddd;
+  margin: 6px 0;
+  color: #eee;
+  font-size: 0.95rem;
 }
 
-.registro strong {
-  color: #00b4ff;
+/* Etiquetas dentro del texto */
+.registro p strong {
+  color: gold;
+}
+
+/* Última edición */
+.registro .editado {
+  color: #aaa;
+  font-size: 0.8rem;
+  font-style: italic;
+  margin-top: 5px;
+}
+
+/* ===== Botones ===== */
+.registro .acciones {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.registro .acciones button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 0.9rem;
+}
+
+.registro .acciones button.editar {
+  background: linear-gradient(45deg, #f1c40f, #f39c12);
+  color: #000;
+}
+
+.registro .acciones button.editar:hover {
+  transform: scale(1.05);
+  background: linear-gradient(45deg, #ffd700, #f1c40f);
+}
+
+.registro .acciones button.eliminar {
+  background: linear-gradient(45deg, #e74c3c, #c0392b);
+  color: #fff;
+}
+
+.registro .acciones button.eliminar:hover {
+  transform: scale(1.05);
+  background: linear-gradient(45deg, #ff5f52, #e74c3c);
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 700px) {
+  section {
+    padding: 15px;
+  }
+
+  .registro {
+    padding: 14px;
+  }
+
+  form button.submit {
+    font-size: 0.95rem;
+  }
+
+  .registro .acciones {
+    justify-content: center;
+  }
 }
