@@ -1,12 +1,12 @@
+// publicacionesAdmin.js
 // ============================
-// 🔥 Configuración de Firebase
+// 🔥 Configuración de Firebase (evitar duplicate-app)
 // ============================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
   collection,
   addDoc,
-  getDocs,
   onSnapshot,
   deleteDoc,
   doc,
@@ -23,96 +23,146 @@ const firebaseConfig = {
   appId: "1:143264550141:web:7e5425c2b75c5579d04294"
 };
 
-const app = initializeApp(firebaseConfig);
+// Evitar inicialización duplicada (importantísimo)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 
 // ============================
-// 📢 Lógica de publicaciones
+// 📢 Lógica de publicaciones (admin)
 // ============================
 const form = document.getElementById("publicacionForm");
 const container = document.getElementById("publicacionesContainer");
 const publicacionesRef = collection(db, "publicaciones");
 
-// 📌 Escuchar publicaciones en tiempo real
+// RENDER: escucha en tiempo real y renderiza las publicaciones
 onSnapshot(publicacionesRef, (snapshot) => {
   container.innerHTML = "";
+
   if (snapshot.empty) {
-    container.innerHTML = "<p>No hay publicaciones aún.</p>";
+    container.innerHTML = "<p style='color:#ccc; text-align:center;'>No hay publicaciones aún.</p>";
     return;
   }
 
   snapshot.forEach((docSnap) => {
     const pub = docSnap.data();
     const id = docSnap.id;
-    const div = document.createElement("div");
-    div.classList.add("publicacion");
 
+    // formatea fecha si existe
+    const fechaText = pub.fecha
+      ? (pub.fecha.seconds ? new Date(pub.fecha.seconds * 1000).toLocaleString() : new Date(pub.fecha).toLocaleString())
+      : "Fecha no disponible";
+
+    // asegúrate de que pub.imagen sea la ruta (ej. "imagenes/evolucion1.png")
+    const imagenHTML = pub.imagen ? `<img src="${pub.imagen}" alt="${escapeHtml(pub.titulo)}">` : "";
+
+    const div = document.createElement("article");
+    div.className = "publicacion";
+    div.dataset.id = id;
     div.innerHTML = `
-      <h3>${pub.titulo}</h3>
-      <img src="imagen/${pub.imagen}" alt="${pub.titulo}">
-      <p>${pub.contenido}</p>
+      <div class="post-head">
+        <div>
+          <h3 class="post-title">${escapeHtml(pub.titulo)}</h3>
+          <small class="meta">Autor: ${escapeHtml(pub.autor || "Administrador")} · ${escapeHtml(fechaText)}</small>
+        </div>
+      </div>
+      ${imagenHTML}
+      <p class="post-body">${escapeHtml(pub.descripcion || "")}</p>
       <div class="acciones">
-        <button onclick="editarPublicacion('${id}', '${pub.titulo}', '${pub.contenido}', '${pub.imagen}')">✏️ Editar</button>
-        <button onclick="eliminarPublicacion('${id}')">🗑️ Eliminar</button>
+        <button class="btn-editar" data-id="${id}">✏️ Editar</button>
+        <button class="btn-eliminar" data-id="${id}">🗑️ Eliminar</button>
       </div>
     `;
     container.appendChild(div);
   });
+
+  // después de renderizar, engancha eventos (delegación simple)
+  container.querySelectorAll(".btn-eliminar").forEach(btn => {
+    btn.onclick = async (e) => {
+      const id = e.currentTarget.dataset.id;
+      if (!confirm("¿Seguro que deseas eliminar esta publicación?")) return;
+      try {
+        await deleteDoc(doc(db, "publicaciones", id));
+        // onSnapshot actualizará la vista automáticamente
+      } catch (err) {
+        console.error("Error al eliminar:", err);
+        alert("Error al eliminar la publicación.");
+      }
+    };
+  });
+
+  container.querySelectorAll(".btn-editar").forEach(btn => {
+    btn.onclick = async (e) => {
+      const id = e.currentTarget.dataset.id;
+      // obtén los valores actuales desde el DOM (más seguro que pasar strings con comillas)
+      const art = container.querySelector(`.publicacion[data-id="${id}"]`);
+      const tituloActual = art.querySelector(".post-title")?.textContent || "";
+      const descripcionActual = art.querySelector(".post-body")?.textContent || "";
+      const imagenActualAttr = art.querySelector("img")?.getAttribute("src") || "";
+
+      const nuevoTitulo = prompt("Nuevo título:", tituloActual);
+      const nuevaDescripcion = prompt("Nuevo contenido:", descripcionActual);
+      const nuevaImagenNombre = prompt("Nuevo nombre de imagen (ej. evolucion1.png). Deja vacío para no cambiar:", imagenActualAttr.includes("imagenes/") ? imagenActualAttr.split("/").pop() : "");
+
+      if (!nuevoTitulo || !nuevaDescripcion) return;
+
+      const nuevaImagenRuta = nuevaImagenNombre ? `imagenes/${nuevaImagenNombre.trim()}` : (imagenActualAttr || null);
+
+      try {
+        await updateDoc(doc(db, "publicaciones", id), {
+          titulo: nuevoTitulo.trim(),
+          descripcion: nuevaDescripcion.trim(),
+          imagen: nuevaImagenRuta
+        });
+        // onSnapshot actualizará la vista
+      } catch (err) {
+        console.error("Error al editar:", err);
+        alert("Error al editar la publicación.");
+      }
+    };
+  });
 });
 
-// 📝 Agregar nueva publicación
+// 📝 Agregar nueva publicación (admin)
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const titulo = document.getElementById("titulo").value.trim();
-  const contenido = document.getElementById("contenidoPub").value.trim();
-  const imagen = document.getElementById("imagenNombre").value.trim();
+  const descripcion = document.getElementById("contenidoPub").value.trim();
+  const imagenNombre = document.getElementById("imagenNombre").value.trim(); // se espera "evolucion1.png"
 
-  if (!titulo || !contenido || !imagen) return alert("Por favor llena todos los campos.");
+  if (!titulo || !descripcion) {
+    alert("Completa título y contenido.");
+    return;
+  }
+
+  // Si proporcionaron imagenNombre guardamos la ruta completa a la carpeta imagenes
+  const imagenRuta = imagenNombre ? `imagenes/${imagenNombre}` : null;
 
   try {
     await addDoc(publicacionesRef, {
       titulo,
-      contenido,
-      imagen,
-      fecha: new Date().toISOString()
+      descripcion,
+      imagen: imagenRuta,
+      fecha: new Date(), // Timestamp compatible
+      autor: "Administrador",
+      likes: 0,
+      comentarios: []
     });
     form.reset();
-  } catch (error) {
-    console.error("Error al subir publicación:", error);
-    alert("Ocurrió un error al subir la publicación.");
+    alert("Publicación creada ✅");
+  } catch (err) {
+    console.error("Error al crear publicación:", err);
+    alert("Error al crear publicación.");
   }
 });
 
-// 🗑️ Eliminar publicación
-window.eliminarPublicacion = async (id) => {
-  if (confirm("¿Seguro que deseas eliminar esta publicación?")) {
-    try {
-      await deleteDoc(doc(db, "publicaciones", id));
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      alert("Ocurrió un error al eliminar.");
-    }
-  }
-};
 
-// ✏️ Editar publicación
-window.editarPublicacion = async (id, tituloActual, contenidoActual, imagenActual) => {
-  const nuevoTitulo = prompt("Nuevo título:", tituloActual);
-  const nuevoContenido = prompt("Nuevo contenido:", contenidoActual);
-  const nuevaImagen = prompt("Nuevo nombre de imagen:", imagenActual);
-
-  if (nuevoTitulo && nuevoContenido && nuevaImagen) {
-    try {
-      const ref = doc(db, "publicaciones", id);
-      await updateDoc(ref, {
-        titulo: nuevoTitulo.trim(),
-        contenido: nuevoContenido.trim(),
-        imagen: nuevaImagen.trim()
-      });
-    } catch (error) {
-      console.error("Error al editar:", error);
-      alert("Ocurrió un error al editar la publicación.");
-    }
-  }
-};
+// ---------- helpers ----------
+function escapeHtml(str = "") {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}

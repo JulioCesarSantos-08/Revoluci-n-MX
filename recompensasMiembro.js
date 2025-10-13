@@ -1,23 +1,21 @@
+// recompensasMiembro.js
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
 import {
   getFirestore,
-  getDocs,
   collection,
+  getDocs,
   query,
   where,
   addDoc,
-  updateDoc,
-  doc
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-// 🔧 Configuración Firebase
+// 🔧 Config Firebase (usa tu config)
 const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
   authDomain: "revolucionmx-308c2.firebaseapp.com",
@@ -27,11 +25,12 @@ const firebaseConfig = {
   appId: "1:143264550141:web:7e5425c2b75c5579d04294",
 };
 
-const app = initializeApp(firebaseConfig);
+// Evitar duplicate app
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🌟 Elementos del DOM
+// DOM
 const logoutBtn = document.getElementById("logoutBtn");
 const modoBtn = document.getElementById("modoBtn");
 const homeBtn = document.getElementById("homeBtn");
@@ -40,46 +39,68 @@ const nombreUsuarioEl = document.getElementById("nombreUsuario");
 const totalPuntosEl = document.getElementById("totalPuntos");
 const listaRecompensasEl = document.getElementById("listaRecompensas");
 
-// Ticket modal
+// Modal
 const ticketModal = document.getElementById("ticketModal");
 const ticketNombre = document.getElementById("ticketNombre");
 const ticketRecompensa = document.getElementById("ticketRecompensa");
 const ticketFecha = document.getElementById("ticketFecha");
 const cerrarTicket = document.getElementById("cerrarTicket");
 
-// 🌙 Modo oscuro activado por defecto
-document.body.classList.add("dark-mode");
-localStorage.setItem("modo", "oscuro");
-modoBtn.textContent = "☀️";
-
-// 🌗 Cambiar modo
+// Modo oscuro por defecto (mantener tu tema oscuro)
+if (!localStorage.getItem("modo")) localStorage.setItem("modo", "oscuro");
+if (localStorage.getItem("modo") === "oscuro") {
+  document.body.classList.add("dark-mode");
+  if (modoBtn) modoBtn.textContent = "☀️";
+} else {
+  document.body.classList.remove("dark-mode");
+  if (modoBtn) modoBtn.textContent = "🌙";
+}
 modoBtn?.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
-  localStorage.setItem(
-    "modo",
-    document.body.classList.contains("dark-mode") ? "oscuro" : "claro"
-  );
-  modoBtn.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+  const modo = document.body.classList.contains("dark-mode") ? "oscuro" : "claro";
+  localStorage.setItem("modo", modo);
+  modoBtn.textContent = modo === "oscuro" ? "☀️" : "🌙";
 });
 
-// 🚪 Cerrar sesión
+// Cerrar sesión
 logoutBtn?.addEventListener("click", async () => {
   await signOut(auth);
   window.location.href = "index.html";
 });
 
-// 🧍 Obtener nombre y puntos
-async function obtenerMiembro(email) {
-  const q = query(collection(db, "miembros"), where("email", "==", email));
-  const snapshot = await getDocs(q);
-  if (!snapshot.empty) {
-    const docu = snapshot.docs[0];
-    return { id: docu.id, ...docu.data() };
-  }
-  return null;
+// ----------------- helpers Firestore -----------------
+
+/**
+ * Devuelve todos los documentos de historialPuntos para un email dado.
+ * @param {string} email
+ * @returns {Array} array de objetos { puntos, descripcion, fecha, adminEmail, ... }
+ */
+async function obtenerHistorialParaEmail(email) {
+  const historialRef = collection(db, "historialPuntos");
+  const q = query(historialRef, where("emailMiembro", "==", email));
+  const snap = await getDocs(q);
+  const items = [];
+  snap.forEach(docu => {
+    items.push({ id: docu.id, ...docu.data() });
+  });
+  return items;
 }
 
-// 🎁 Recompensas inventadas (puedes editarlas luego)
+/**
+ * Suma puntos del historial para un email (considera positivos y negativos).
+ * @param {string} email
+ * @returns {number} total puntos
+ */
+async function calcularTotalPuntos(email) {
+  const items = await obtenerHistorialParaEmail(email);
+  let total = 0;
+  for (const it of items) {
+    total += Number(it.puntos || 0);
+  }
+  return total;
+}
+
+// ----------------- Recompensas (inventadas) -----------------
 const recompensas = [
   { nombre: "Taza personalizada", costo: 50 },
   { nombre: "Gorra oficial", costo: 80 },
@@ -88,72 +109,86 @@ const recompensas = [
   { nombre: "Sticker pack", costo: 30 }
 ];
 
-// 🧾 Mostrar recompensas
-function mostrarRecompensas(miembro) {
+// Render de recompensas
+function mostrarRecompensas(totalActual, miembroData) {
   listaRecompensasEl.innerHTML = "";
-  recompensas.forEach((r) => {
+  recompensas.forEach(r => {
     const card = document.createElement("div");
-    card.classList.add("recompensa-card");
+    card.className = "recompensa-card";
     card.innerHTML = `
-      <h3>${r.nombre}</h3>
-      <p>💰 Costo: ${r.costo} puntos</p>
-      <button class="canjearBtn" ${miembro.puntos < r.costo ? "disabled" : ""}>
-        Canjear
-      </button>
+      <h3>${escapeHtml(r.nombre)}</h3>
+      <p>💰 Costo: <strong>${r.costo}</strong> puntos</p>
+      <button class="canjearBtn" ${totalActual < r.costo ? "disabled" : ""}>Canjear</button>
     `;
-
     const btn = card.querySelector(".canjearBtn");
-    btn.addEventListener("click", () => canjearRecompensa(r, miembro));
-
+    btn.addEventListener("click", () => canjearRecompensa(r, miembroData));
     listaRecompensasEl.appendChild(card);
   });
 }
 
-// 🪙 Canjear recompensa
+/**
+ * Canjear recompensa:
+ * - verifica puntos reales (desde historialPuntos)
+ * - crea ticket en ticketsCanje
+ * - agrega una entrada en historialPuntos con puntos negativos para registrar la resta
+ */
 async function canjearRecompensa(recompensa, miembro) {
-  if (miembro.puntos < recompensa.costo) {
+  // recalcula total por seguridad
+  const totalReal = await calcularTotalPuntos(miembro.email);
+  if (totalReal < recompensa.costo) {
     alert("No tienes suficientes puntos para esta recompensa.");
+    // actualizar UI por si acaso
+    totalPuntosEl.textContent = totalReal;
+    mostrarRecompensas(totalReal, miembro);
     return;
   }
 
-  const confirmar = confirm(
-    `¿Seguro que quieres canjear "${recompensa.nombre}" por ${recompensa.costo} puntos?`
-  );
+  const confirmar = confirm(`¿Deseas canjear "${recompensa.nombre}" por ${recompensa.costo} puntos?`);
   if (!confirmar) return;
 
-  // ✨ Actualizar puntos
-  const nuevosPuntos = miembro.puntos - recompensa.costo;
-  await updateDoc(doc(db, "miembros", miembro.id), { puntos: nuevosPuntos });
+  try {
+    // 1) Crear ticketCanje (documento)
+    const ticketRef = await addDoc(collection(db, "ticketsCanje"), {
+      emailMiembro: miembro.email,
+      nombreMiembro: miembro.nombre || miembro.email,
+      recompensa: recompensa.nombre,
+      costo: recompensa.costo,
+      fecha: serverTimestamp(),
+      estado: "pendiente"
+    });
 
-  // 🧾 Crear ticket en Firestore
-  const fecha = new Date();
-  await addDoc(collection(db, "ticketsCanje"), {
-    emailMiembro: miembro.email,
-    nombreMiembro: miembro.nombre,
-    recompensa: recompensa.nombre,
-    costo: recompensa.costo,
-    fecha: fecha,
-    estado: "pendiente" // luego los admins pueden validarlo
-  });
+    // 2) Crear registro en historialPuntos (entrada NEGATIVA para restar puntos)
+    await addDoc(collection(db, "historialPuntos"), {
+      emailMiembro: miembro.email,
+      adminEmail: miembro.email, // quien generó la acción (el propio usuario). Puedes cambiarlo si quieres.
+      descripcion: `Canje: ${recompensa.nombre}`,
+      puntos: -Math.abs(recompensa.costo),
+      fecha: serverTimestamp(),
+      ticketId: ticketRef.id
+    });
 
-  // 🪪 Mostrar ticket en modal
-  ticketNombre.textContent = miembro.nombre;
-  ticketRecompensa.textContent = recompensa.nombre;
-  ticketFecha.textContent = fecha.toLocaleString();
-  ticketModal.classList.remove("oculto");
+    // 3) Actualizar UI: recalcular total y mostrar modal con ticket
+    const nuevoTotal = await calcularTotalPuntos(miembro.email);
+    totalPuntosEl.textContent = nuevoTotal;
+    ticketNombre.textContent = miembro.nombre || miembro.email;
+    ticketRecompensa.textContent = recompensa.nombre;
+    ticketFecha.textContent = new Date().toLocaleString();
+    ticketModal?.classList.remove("oculto");
+    mostrarRecompensas(nuevoTotal, miembro);
 
-  // 🆙 Actualizar puntos mostrados y botones
-  miembro.puntos = nuevosPuntos;
-  totalPuntosEl.textContent = nuevosPuntos;
-  mostrarRecompensas(miembro);
+    alert("¡Canje realizado! Se generó el ticket y se registró el movimiento.");
+  } catch (err) {
+    console.error("Error al canjear:", err);
+    alert("Ocurrió un error al procesar el canje. Intenta de nuevo.");
+  }
 }
 
-// ❌ Cerrar modal
-cerrarTicket.addEventListener("click", () => {
-  ticketModal.classList.add("oculto");
+// cerrar modal
+cerrarTicket?.addEventListener("click", () => {
+  ticketModal?.classList.add("oculto");
 });
 
-// 🧍 Verificar sesión
+// ----------------- Flujo de inicio (usuario logueado) -----------------
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Debes iniciar sesión primero.");
@@ -161,20 +196,41 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  const miembro = await obtenerMiembro(user.email);
-  if (!miembro) {
-    alert("Tu perfil no está registrado.");
+  // obtener datos del miembro desde la colección 'miembros'
+  // (su documento puede contener nombre y otros datos)
+  const miembrosRef = collection(db, "miembros");
+  const q = query(miembrosRef, where("email", "==", user.email));
+  const snap = await getDocs(q);
+  if (snap.empty) {
+    alert("Tu perfil no está registrado en la colección 'miembros'. Contacta a un admin.");
     await signOut(auth);
     window.location.href = "index.html";
     return;
   }
+  const docu = snap.docs[0];
+  const miembro = { id: docu.id, ...docu.data() };
 
-  nombreUsuarioEl.textContent = miembro.nombre;
-  totalPuntosEl.textContent = miembro.puntos || 0;
+  // mostrar nombre
+  nombreUsuarioEl.textContent = miembro.nombre || user.email;
 
-  mostrarRecompensas(miembro);
+  // calcular total real desde historialPuntos
+  const total = await calcularTotalPuntos(user.email);
+  totalPuntosEl.textContent = total;
+
+  // mostrar recompensas habilitadas según total
+  mostrarRecompensas(total, miembro);
 });
 
-// 🧭 Navegación
+// navegación
 homeBtn?.addEventListener("click", () => window.location.href = "publicacionesMiembro.html");
 puntosBtn?.addEventListener("click", () => window.location.href = "puntosMiembro.html");
+
+// ---------- helper ----------
+function escapeHtml(str = "") {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}

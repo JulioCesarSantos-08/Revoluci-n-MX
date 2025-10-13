@@ -1,119 +1,104 @@
-/* ====== Sección principal ====== */
-section {
-  background-color: #1a1a1a;
-  padding: 20px;
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
+/* publicacionesAdmin.css - tema oscuro y responsivo */
+* { box-sizing: border-box; }
+:root {
+  --bg: #0b0b0b;
+  --panel: #111;
+  --muted: #9aa3b2;
+  --accent: #00b4ff;
+  --white: #ffffff;
+  --card: #151515;
 }
 
-h2 {
-  color: #00b4ff;
-  margin-bottom: 10px;
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  -webkit-font-smoothing:antialiased;
+}
+
+header {
+  background: #070707;
+  padding: 16px;
   text-align: center;
+  border-bottom: 3px solid var(--accent);
 }
 
-/* ====== Formulario ====== */
-form label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #00b4ff;
+header h1 { margin: 0; font-size: 1.25rem; color: var(--accent); }
+
+main { max-width: 960px; margin: 18px auto; padding: 12px; }
+
+/* formulario */
+.formulario {
+  background: var(--panel);
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
 }
 
-form input,
-form textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border-radius: 6px;
-  border: none;
-  background-color: #2a2a2a;
-  color: #fff;
+.formulario h2 { color: var(--accent); margin-top:0; }
+label { display:block; margin-top:10px; color:var(--muted); font-size:0.95rem; }
+input[type="text"], textarea {
+  width:100%; padding:10px; margin-top:6px; border-radius:8px;
+  border: 1px solid #222; background: #0f0f0f; color: var(--white);
 }
-
-form textarea {
-  resize: vertical;
-}
+textarea { min-height:120px; resize:vertical; }
 
 button.submit {
-  margin-top: 15px;
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(90deg, #00b4ff, #0084ff);
-  color: #fff;
+  margin-top:12px;
+  background: linear-gradient(90deg,var(--accent), #0084ff);
+  color: #000;
   border: none;
+  padding: 10px 14px;
   border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  font-weight:700;
+  cursor:pointer;
 }
 
-button.submit:hover {
-  background: linear-gradient(90deg, #0084ff, #00b4ff);
-  transform: scale(1.05);
+/* lista publicaciones */
+.listaPublicaciones {
+  background: transparent;
 }
 
-/* ====== Lista de publicaciones ====== */
-#publicacionesContainer {
-  margin-top: 20px;
-}
+#publicacionesContainer { display:flex; flex-direction:column; gap:12px; }
 
 .publicacion {
-  background-color: #2a2a2a;
-  color: #fff;
-  border: 1px solid #00b4ff;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 180, 255, 0.2);
-}
-
-.publicacion h3 {
-  color: #00b4ff;
-  margin-top: 0;
+  background: var(--card);
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
 }
 
 .publicacion img {
-  max-width: 100%;
-  display: block;
+  width:100%;
+  max-height:320px;
+  object-fit:cover;
+  border-radius:8px;
   margin: 10px 0;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 180, 255, 0.3);
 }
 
-.publicacion p {
-  color: #ddd;
-  line-height: 1.4;
-}
+.post-title { margin:0; color: var(--white); font-size:1.05rem; }
+.meta { color:var(--muted); font-size:0.82rem; }
 
-/* ====== Botones editar y eliminar ====== */
-.acciones {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
+.post-body { color:#dcdcdc; line-height:1.5; }
 
+.acciones { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
 .acciones button {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-  font-weight: bold;
-  transition: transform 0.2s ease;
+  flex:1; min-width:120px;
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  background:#222;
+  color:#fff;
 }
+.acciones button:hover { transform:translateY(-2px); }
 
-.acciones button:first-child {
-  background: linear-gradient(90deg, #f39c12, #e67e22);
-}
-
-.acciones button:last-child {
-  background: linear-gradient(90deg, #e74c3c, #c0392b);
-}
-
-.acciones button:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+/* responsive */
+@media (max-width:700px) {
+  main { padding:10px; }
+  .acciones button { font-size:0.9rem; min-width:100px; }
+  header h1 { font-size:1rem; }
 }
