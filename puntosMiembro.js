@@ -10,7 +10,9 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ----------------- Config Firebase -----------------
@@ -41,7 +43,7 @@ const recompensasBtn = document.getElementById("recompensasBtn");
 
 // ----------------- Reglas -----------------
 const reglas = [
-  { accion: "Tener TAG RMX", puntos: 40 },
+  { accion: "Tener TAG RMX", puntos: 50 },
   { accion: "Guerras - Quedar TOP 1", puntos: 30 },
   { accion: "Guerras - Quedar TOP 2", puntos: 20 },
   { accion: "Guerras - Quedar TOP 3", puntos: 10 },
@@ -49,8 +51,8 @@ const reglas = [
   { accion: "Donaciones - Top 1", puntos: 30 },
   { accion: "Donaciones - Top 2", puntos: 20 },
   { accion: "Donaciones - Top 3", puntos: 10 },
-  { accion: "Estar en grupo de WhatsApp", puntos: 10 },
-  { accion: "Seguirnos en redes", puntos: 10 }
+  { accion: "Estar en grupo de WhatsApp", puntos: 20 },
+  { accion: "Seguirnos en redes", puntos: 20 }
 ];
 
 function renderReglas() {
@@ -70,6 +72,20 @@ async function obtenerHistorial(email) {
   const items = [];
   snap.forEach(d => items.push({ id: d.id, ...d.data() }));
   return items;
+}
+
+async function obtenerNombreAdmin(emailAdmin) {
+  if (!emailAdmin) return "—";
+  try {
+    const adminDoc = await getDoc(doc(db, "admins", emailAdmin));
+    if (adminDoc.exists()) {
+      const data = adminDoc.data();
+      return data.nombre || emailAdmin;
+    }
+  } catch (e) {
+    console.warn("Error obteniendo admin:", e);
+  }
+  return emailAdmin;
 }
 
 function parseFecha(itemFecha) {
@@ -92,14 +108,20 @@ function sumarPuntosDelHistorial(items) {
 async function mostrarHistorialUI(email) {
   listaHistorial.innerHTML = "<li>Cargando historial...</li>";
   const items = await obtenerHistorial(email);
+
   if (!items.length) {
     listaHistorial.innerHTML = "<li>No tienes puntos registrados aún.</li>";
     return;
   }
 
-  items.sort((a,b) => {
-    const ta = a.fecha?.seconds ? a.fecha.seconds : new Date(a.fecha || 0).getTime()/1000;
-    const tb = b.fecha?.seconds ? b.fecha.seconds : new Date(b.fecha || 0).getTime()/1000;
+  // 🔹 Obtener nombre del admin para cada registro
+  for (const it of items) {
+    it.adminNombre = await obtenerNombreAdmin(it.adminEmail);
+  }
+
+  items.sort((a, b) => {
+    const ta = a.fecha?.seconds ? a.fecha.seconds : new Date(a.fecha || 0).getTime() / 1000;
+    const tb = b.fecha?.seconds ? b.fecha.seconds : new Date(b.fecha || 0).getTime() / 1000;
     return tb - ta;
   });
 
@@ -111,6 +133,10 @@ async function mostrarHistorialUI(email) {
     }
     for (const it of filtrado) {
       const li = document.createElement("li");
+      const adminDisplay = it.adminNombre
+        ? `Admin: ${escapeHtml(it.adminNombre)}`
+        : (it.adminEmail ? `Admin: ${escapeHtml(it.adminEmail)}` : "Admin: —");
+
       li.innerHTML = `
         <div class="hist-row">
           <div class="hist-left">
@@ -121,7 +147,7 @@ async function mostrarHistorialUI(email) {
           </div>
           <div class="hist-right">
             <span class="hist-fecha">${escapeHtml(parseFecha(it.fecha))}</span><br>
-            <span class="hist-admin">Admin: ${escapeHtml(it.adminEmail || "—")}</span>
+            <span class="hist-admin">${adminDisplay}</span>
           </div>
         </div>
       `;

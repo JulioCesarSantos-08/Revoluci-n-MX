@@ -10,8 +10,13 @@ import {
   onSnapshot,
   deleteDoc,
   doc,
-  updateDoc
+  updateDoc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
@@ -23,9 +28,10 @@ const firebaseConfig = {
   appId: "1:143264550141:web:7e5425c2b75c5579d04294"
 };
 
-// Evitar inicialización duplicada (importantísimo)
+// Evitar inicialización duplicada
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // ============================
 // 📢 Lógica de publicaciones (admin)
@@ -33,6 +39,31 @@ const db = getFirestore(app);
 const form = document.getElementById("publicacionForm");
 const container = document.getElementById("publicacionesContainer");
 const publicacionesRef = collection(db, "publicaciones");
+
+let nombreAdminActual = "Administrador"; // valor por defecto
+
+// 🔍 Obtener nombre del admin desde la colección "admins"
+async function obtenerNombreAdmin(email) {
+  try {
+    const adminRef = doc(db, "admins", email);
+    const adminSnap = await getDoc(adminRef);
+    if (adminSnap.exists()) {
+      const data = adminSnap.data();
+      return data.nombre || "Administrador";
+    }
+    return "Administrador";
+  } catch (error) {
+    console.error("Error al obtener nombre del admin:", error);
+    return "Administrador";
+  }
+}
+
+// 👤 Detectar usuario autenticado
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    nombreAdminActual = await obtenerNombreAdmin(user.email);
+  }
+});
 
 // RENDER: escucha en tiempo real y renderiza las publicaciones
 onSnapshot(publicacionesRef, (snapshot) => {
@@ -75,14 +106,13 @@ onSnapshot(publicacionesRef, (snapshot) => {
     container.appendChild(div);
   });
 
-  // después de renderizar, engancha eventos (delegación simple)
+  // Eventos eliminar
   container.querySelectorAll(".btn-eliminar").forEach(btn => {
     btn.onclick = async (e) => {
       const id = e.currentTarget.dataset.id;
       if (!confirm("¿Seguro que deseas eliminar esta publicación?")) return;
       try {
         await deleteDoc(doc(db, "publicaciones", id));
-        // onSnapshot actualizará la vista automáticamente
       } catch (err) {
         console.error("Error al eliminar:", err);
         alert("Error al eliminar la publicación.");
@@ -90,10 +120,10 @@ onSnapshot(publicacionesRef, (snapshot) => {
     };
   });
 
+  // Eventos editar
   container.querySelectorAll(".btn-editar").forEach(btn => {
     btn.onclick = async (e) => {
       const id = e.currentTarget.dataset.id;
-      // obtén los valores actuales desde el DOM (más seguro que pasar strings con comillas)
       const art = container.querySelector(`.publicacion[data-id="${id}"]`);
       const tituloActual = art.querySelector(".post-title")?.textContent || "";
       const descripcionActual = art.querySelector(".post-body")?.textContent || "";
@@ -113,7 +143,6 @@ onSnapshot(publicacionesRef, (snapshot) => {
           descripcion: nuevaDescripcion.trim(),
           imagen: nuevaImagenRuta
         });
-        // onSnapshot actualizará la vista
       } catch (err) {
         console.error("Error al editar:", err);
         alert("Error al editar la publicación.");
@@ -128,14 +157,13 @@ form.addEventListener("submit", async (e) => {
 
   const titulo = document.getElementById("titulo").value.trim();
   const descripcion = document.getElementById("contenidoPub").value.trim();
-  const imagenNombre = document.getElementById("imagenNombre").value.trim(); // se espera "evolucion1.png"
+  const imagenNombre = document.getElementById("imagenNombre").value.trim();
 
   if (!titulo || !descripcion) {
     alert("Completa título y contenido.");
     return;
   }
 
-  // Si proporcionaron imagenNombre guardamos la ruta completa a la carpeta imagenes
   const imagenRuta = imagenNombre ? `imagenes/${imagenNombre}` : null;
 
   try {
@@ -143,8 +171,8 @@ form.addEventListener("submit", async (e) => {
       titulo,
       descripcion,
       imagen: imagenRuta,
-      fecha: new Date(), // Timestamp compatible
-      autor: "Administrador",
+      fecha: new Date(),
+      autor: nombreAdminActual, // 🔥 ahora guarda el nombre del admin desde Firestore
       likes: 0,
       comentarios: []
     });
@@ -155,7 +183,6 @@ form.addEventListener("submit", async (e) => {
     alert("Error al crear publicación.");
   }
 });
-
 
 // ---------- helpers ----------
 function escapeHtml(str = "") {

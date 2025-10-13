@@ -128,6 +128,13 @@ async function cargarHistorial() {
       nombreMiembro = miembroDoc.data().nombre || data.emailMiembro;
     }
 
+    // 🔹 obtener nombre del admin
+    let nombreAdmin = data.adminEmail;
+    const adminDoc = await getDoc(doc(db, "admins", data.adminEmail));
+    if (adminDoc.exists()) {
+      nombreAdmin = adminDoc.data().nombre || data.adminEmail;
+    }
+
     const div = document.createElement("div");
     div.classList.add("registro");
 
@@ -135,7 +142,7 @@ async function cargarHistorial() {
       <p><strong>👤 Miembro:</strong> ${nombreMiembro}</p>
       <p><strong>✨ Puntos:</strong> ${data.puntos}</p>
       <p><strong>📝 Motivo:</strong> ${data.descripcion}</p>
-      <p><strong>👮‍♂️ Asignado por:</strong> ${data.adminEmail}</p>
+      <p><strong>👮‍♂️ Asignado por:</strong> ${nombreAdmin}</p>
       <p><strong>🕒 Fecha:</strong> ${fecha}</p>
       ${ultimaEdicion}
       <div class="acciones">
