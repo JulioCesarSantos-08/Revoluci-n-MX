@@ -6,11 +6,15 @@
   <title>Puntos | Revolución MX</title>
   <link rel="stylesheet" href="puntosMiembro.css">
 </head>
-<body class="dark-mode">
+<body data-theme="dark">
   <header>
-    <h1>💎 Mis Puntos</h1>
-    <nav>
-      <button id="modoBtn">☀️</button>
+    <div class="header-inner">
+      <img src="imagenes/logo1.png" alt="Logo" class="logo">
+      <h1>💎 Mis Puntos</h1>
+    </div>
+
+    <nav class="nav-header">
+      <button id="modoBtn" class="theme-btn">🌙</button>
       <button id="homeBtn">🏠 Inicio</button>
       <button id="recompensasBtn">🎁 Recompensas</button>
       <button id="logoutBtn">🚪 Salir</button>
@@ -24,8 +28,29 @@
       <h3 id="totalPuntos">0</h3>
     </section>
 
+    <section id="comoGanar" class="tarjeta">
+      <h2>📌 Cómo ganar puntos</h2>
+      <div class="table-wrap">
+        <table id="tablaReglas" class="reglas-table">
+          <thead>
+            <tr>
+              <th>Acción</th>
+              <th>Puntos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Se rellena desde JS -->
+          </tbody>
+        </table>
+      </div>
+      <p class="nota">Estas reglas son orientativas; las admins pueden validar o ajustar puntos en casos especiales.</p>
+    </section>
+
     <section id="historial" class="tarjeta">
       <h2>📜 Historial de puntos</h2>
+      <div class="historial-info">
+        <input type="text" id="buscarHistorial" placeholder="Buscar descripción..." />
+      </div>
       <ul id="listaHistorial">
         <li>Cargando historial...</li>
       </ul>

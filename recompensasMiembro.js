@@ -105,8 +105,8 @@ const recompensas = [
   { nombre: "Taza personalizada", costo: 50 },
   { nombre: "Gorra oficial", costo: 80 },
   { nombre: "Playera Revolución MX", costo: 120 },
-  { nombre: "Acceso VIP a evento", costo: 200 },
-  { nombre: "Sticker pack", costo: 30 }
+  { nombre: "Ascenso colider", costo: 1200 },
+  { nombre: "Pass Royale", costo: 2000 }
 ];
 
 // Render de recompensas

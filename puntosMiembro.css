@@ -20,6 +20,12 @@ header h1 {
   font-size: 1.5rem;
 }
 
+.logo {
+  height: 40px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
 nav button {
   background: #333;
   color: #fff;
@@ -29,6 +35,7 @@ nav button {
   cursor: pointer;
   border-radius: 6px;
   transition: background 0.3s;
+  font-size: 1rem;
 }
 
 nav button:hover {
@@ -83,9 +90,11 @@ body:not(.dark-mode) .tarjeta {
   color: #000;
 }
 
+/* 💎 Total puntos */
 #totalPuntos {
   font-size: 2.5rem;
   color: #00ff99;
+  margin: 10px 0;
 }
 
 /* 🪙 Historial */
@@ -107,12 +116,52 @@ body:not(.dark-mode) #listaHistorial li {
   background: #f1f1f1;
 }
 
-#listaHistorial .fecha {
+.hist-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.hist-pts {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.hist-pts.positivo {
+  color: #00ff99;
+}
+
+.hist-pts.negativo {
+  color: #ff4d4d;
+}
+
+.hist-fecha {
   font-size: 0.85rem;
   color: #aaa;
 }
 
-#listaHistorial .admin {
+.hist-admin {
   font-size: 0.8rem;
   color: #999;
+}
+
+.hist-desc {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.historial-info input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+}
+
+/* Estilo modo claro para input */
+body:not(.dark-mode) .historial-info input {
+  background: #f1f1f1;
+  color: #000;
 }
