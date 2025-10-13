@@ -45,7 +45,7 @@ const reglas = [
   { accion: "Guerras - Quedar TOP 1", puntos: 30 },
   { accion: "Guerras - Quedar TOP 2", puntos: 20 },
   { accion: "Guerras - Quedar TOP 3", puntos: 10 },
-  { accion: "Realizar 16 ataques de guerra", puntos: 5 },
+  { accion: "Realizar 16 ataques de guerra", puntos: 20 },
   { accion: "Donaciones - Top 1", puntos: 30 },
   { accion: "Donaciones - Top 2", puntos: 20 },
   { accion: "Donaciones - Top 3", puntos: 10 },
