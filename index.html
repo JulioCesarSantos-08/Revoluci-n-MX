@@ -86,7 +86,28 @@
     }
     .forgot:hover { color: #fff; text-shadow: 0 0 10px #ffd700; }
     .error { margin-top: 10px; color: #ff4c4c; font-size: 1rem; }
+
+    /* 🔹 Botón NUEVO para registro */
+    .newuser-btn {
+      display: block;
+      margin-top: 15px;
+      padding: 10px;
+      background: linear-gradient(90deg, #ffd700, #ffb300);
+      color: #000;
+      font-size: 1rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .newuser-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(90deg, #ffb300, #ffd700);
+      box-shadow: 0 0 15px #ffd700;
+    }
+
     footer { margin-top: 20px; font-size: 0.9rem; color: #aaa; text-align: center; padding: 10px; }
+
     @media (max-width: 480px) {
       h2 { font-size: 1.8rem; }
       .login-box { padding: 30px 20px; }
@@ -106,6 +127,11 @@
         <input type="password" id="password" placeholder="Contraseña" required>
         <button type="submit">Iniciar sesión</button>
       </form>
+
+      <!-- 🔹 NUEVO BOTÓN DE REGISTRO -->
+      <a href="https://forms.gle/FYZwQhESEjAoXP4X8" target="_blank" class="newuser-btn">
+        Si eres nuevo registra tus datos aquí
+      </a>
 
       <a href="#" id="forgotPass" class="forgot">¿Olvidaste tu contraseña?</a>
       <p id="errorMsg" class="error"></p>
