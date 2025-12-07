@@ -1,13 +1,24 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" href="imagenes/logo1.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel del Administrador | Revolución MX</title>
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
+
+  <!-- 🔒 PROTECCIÓN DE ACCESO -->
+  <script>
+    const role = localStorage.getItem("userRole");
+    const email = localStorage.getItem("userEmail");
+
+    if (role !== "admin") {
+      alert("⚠️ Acceso denegado.");
+      window.location.href = "index.html";
+    }
+  </script>
+
   <header class="header">
     <div class="logo">
       <img src="imagenes/logo1.png" alt="Logo Clan" />
@@ -29,7 +40,7 @@
   <!-- Firebase y Admin JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // 🔹 Configuración Firebase
@@ -53,19 +64,10 @@
     const puntosBtn = document.getElementById('puntosBtn');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // 🔹 Protección de acceso
-    const admins = ["ti43300@uvp.edu.mx","usuario@gmail.com", "andrespersandoval@gmail.com", "luisramirezd86@gmail.com"];
-    onAuthStateChanged(auth, (user) => {
-      if (!user || !admins.includes(user.email)) {
-        alert("⚠️ Acceso denegado.");
-        signOut(auth);
-        window.location.href = "index.html";
-      }
-    });
-
     // 🔹 Cerrar sesión
     logoutBtn.addEventListener('click', async () => {
       await signOut(auth);
+      localStorage.clear(); // Limpiar datos locales
       window.location.href = "index.html";
     });
 
@@ -91,5 +93,6 @@
     publicacionesBtn.addEventListener('click', () => cargarSeccion('publicacionesAdmin.html'));
     puntosBtn.addEventListener('click', () => cargarSeccion('puntosAdmin.html'));
   </script>
+
 </body>
 </html>
