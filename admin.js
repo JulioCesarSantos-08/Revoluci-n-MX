@@ -22,6 +22,7 @@ onAuthStateChanged(auth, (user) => {
   } else if (
     user.email !== "ti43300@uvp.edu.mx" &&
     user.email !== "andrespersandoval@gmail.com" &&
+    user.email !== "usuario@gmail.com" &&
     user.email !== "luisramirezd86@gmail.com"
   ) {
     alert("⚠️ Acceso denegado. No eres administrador.");
