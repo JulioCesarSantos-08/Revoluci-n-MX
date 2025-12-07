@@ -86,6 +86,7 @@
       transition: 0.3s;
     }
     .forgot:hover { color: #fff; text-shadow: 0 0 10px #ffd700; }
+
     .error { margin-top: 10px; color: #ff4c4c; font-size: 1rem; }
 
     /* 🔹 Botón NUEVO para registro */
@@ -116,6 +117,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="login-container">
     <div class="login-box">
@@ -129,12 +131,12 @@
         <button type="submit">Iniciar sesión</button>
       </form>
 
-      <!-- 🔹 NUEVO BOTÓN DE REGISTRO -->
       <a href="https://forms.gle/FYZwQhESEjAoXP4X8" target="_blank" class="newuser-btn">
         Si eres nuevo registra tus datos aquí
       </a>
 
       <a href="#" id="forgotPass" class="forgot">¿Olvidaste tu contraseña?</a>
+
       <p id="errorMsg" class="error"></p>
     </div>
   </div>
@@ -143,9 +145,15 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getAuth, signInWithEmailAndPassword, sendPasswordResetEmail 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // 🔹 Configuración Firebase
+    import {
+      getFirestore, doc, getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDd1jXzZfR-QUW7iRdYjF4oMZTsVBaIAFM",
       authDomain: "revolucionmx-308c2.firebaseapp.com",
@@ -158,14 +166,17 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('errorMsg');
     const forgotPass = document.getElementById('forgotPass');
 
-    // 🔹 Inicio de sesión
+
+    // 🔹 Inicio de sesión con roles Firestore
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
 
@@ -173,11 +184,13 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Redirigir admin
-        if (user.email === "ti43300@uvp.edu.mx") {
+        // 🔍 Verificar si es admin en Firestore
+        const ref = doc(db, "admins", user.email);
+        const snap = await getDoc(ref);
+
+        if (snap.exists() && snap.data().rol === "admin") {
           window.location.href = "admin.html";
         } else {
-          // Todos los demás entran como miembros
           window.location.href = "publicacionesMiembro.html";
         }
 
@@ -186,6 +199,7 @@
         errorMsg.textContent = "Correo o contraseña incorrectos.";
       }
     });
+
 
     // 🔹 Recuperar contraseña
     forgotPass.addEventListener('click', async (e) => {
@@ -200,6 +214,8 @@
         alert("Error: " + error.message);
       }
     });
+
   </script>
+
 </body>
 </html>
