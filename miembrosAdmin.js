@@ -37,6 +37,7 @@ const db = getFirestore(app);
 const admins = [
   "ti43300@uvp.edu.mx",
   "andrespersandoval@gmail.com",
+  "usuario@gmail.com",
   "luisramirezd86@gmail.com"
 ];
 
