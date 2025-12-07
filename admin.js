@@ -18,19 +18,38 @@ const logoutBtn = document.getElementById('logoutBtn');
 const contenido = document.getElementById('contenido');
 
 
-// ✅ Protección de administradores usando Firestore
+// ✅ Protección REAL de administradores desde Firestore
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "index.html";
     return;
   }
 
-  const ref = doc(db, "admins", user.email);
-  const snap = await getDoc(ref);
+  try {
+    const ref = doc(db, "admins", user.email);
+    const snap = await getDoc(ref);
 
-  if (!snap.exists() || snap.data().rol !== "admin") {
-    alert("⚠️ Acceso denegado. No eres administrador.");
-    await signOut(auth);
+    // ❌ Si no existe en la colección admins → no tiene permiso
+    if (!snap.exists()) {
+      alert("⚠️ Acceso denegado. No estás registrado como administrador.");
+      await signOut(auth);
+      window.location.href = "index.html";
+      return;
+    }
+
+    // ❌ Si existe pero no tiene rol admin
+    if (snap.data().rol !== "admin") {
+      alert("⚠️ Acceso denegado. No tienes permisos de administrador.");
+      await signOut(auth);
+      window.location.href = "index.html";
+      return;
+    }
+
+    // ✔ Si llega aquí → acceso correcto
+
+  } catch (error) {
+    console.error("Error verificando rol:", error);
+    alert("Error verificando permisos.");
     window.location.href = "index.html";
   }
 });
@@ -49,7 +68,10 @@ publicacionesBtn.addEventListener('click', mostrarPublicaciones);
 puntosBtn.addEventListener('click', mostrarPuntos);
 
 
-// 👥 Mostrar lista de miembros con edición y eliminación
+
+// ------------------------------------------------------
+// 👥 MIEMBROS
+// ------------------------------------------------------
 async function mostrarMiembros() {
   contenido.innerHTML = `
     <h2>👥 Lista de miembros</h2>
@@ -108,7 +130,7 @@ async function mostrarMiembros() {
     tablaBody.appendChild(fila);
   });
 
-  // 🎯 Editar miembro
+  // Editar
   document.querySelectorAll(".btn-editar").forEach(btn => {
     btn.addEventListener("click", () => {
       document.getElementById("emailMiembro").value = btn.dataset.email;
@@ -117,7 +139,7 @@ async function mostrarMiembros() {
     });
   });
 
-  // 🗑️ Eliminar miembro
+  // Eliminar
   document.querySelectorAll(".btn-eliminar").forEach(btn => {
     btn.addEventListener("click", async () => {
       const confirmacion = confirm("¿Estás seguro de eliminar este miembro?");
@@ -129,7 +151,7 @@ async function mostrarMiembros() {
     });
   });
 
-  // 💾 Agregar o actualizar
+  // Agregar / actualizar
   document.getElementById('agregarMiembroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -159,12 +181,15 @@ async function mostrarMiembros() {
       alert("✅ Miembro agregado.");
     }
 
-    mostrarMiembros(); // recargar
+    mostrarMiembros();
   });
 }
 
 
-// 📰 Publicaciones
+
+// ------------------------------------------------------
+// 📰 PUBLICACIONES
+// ------------------------------------------------------
 function mostrarPublicaciones() {
   contenido.innerHTML = `
     <h2>📰 Subir publicación</h2>
@@ -183,6 +208,7 @@ function mostrarPublicaciones() {
 
   document.getElementById('publicacionForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const titulo = document.getElementById('titulo').value;
     const contenidoPub = document.getElementById('contenidoPub').value;
 
@@ -198,7 +224,10 @@ function mostrarPublicaciones() {
 }
 
 
-// 🎯 Puntos
+
+// ------------------------------------------------------
+// 🎯 PUNTOS
+// ------------------------------------------------------
 async function mostrarPuntos() {
   contenido.innerHTML = `
     <h2>🎯 Asignar puntos</h2>
@@ -206,8 +235,10 @@ async function mostrarPuntos() {
       <form id="puntosForm">
         <label>Email del miembro</label>
         <input type="email" id="emailMiembro" required>
+
         <label>Cantidad de puntos</label>
         <input type="number" id="cantidadPuntos" required>
+
         <button type="submit" class="submit">Agregar puntos</button>
       </form>
     </section>
@@ -215,6 +246,7 @@ async function mostrarPuntos() {
 
   document.getElementById('puntosForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const email = document.getElementById('emailMiembro').value.trim();
     const puntos = parseInt(document.getElementById('cantidadPuntos').value);
 
@@ -223,10 +255,13 @@ async function mostrarPuntos() {
 
     for (const docSnap of querySnapshot.docs) {
       const data = docSnap.data();
+
       if (data.email === email) {
         encontrado = true;
         const ref = doc(db, "miembros", docSnap.id);
+
         await updateDoc(ref, { puntos: (data.puntos || 0) + puntos });
+
         alert("✅ Puntos actualizados correctamente");
         break;
       }
