@@ -15,19 +15,15 @@ const puntosBtn = document.getElementById('puntosBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const contenido = document.getElementById('contenido');
 
-// Lista de correos autorizados como administradores
-const admins = [
-  "ti43300@uvp.edu.mx",
-  "andrespersandoval@gmail.com",
-  "usuario@gmail.com",
-  "luisramirezd86@gmail.com"
-];
-
-// Protección de administradores
+// ✅ Protección de administradores
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
-  } else if (!admins.includes(user.email)) {
+  } else if (
+    user.email !== "ti43300@uvp.edu.mx" &&
+    user.email !== "andrespersandoval@gmail.com" &&
+    user.email !== "luisramirezd86@gmail.com"
+  ) {
     alert("⚠️ Acceso denegado. No eres administrador.");
     signOut(auth);
     window.location.href = "index.html";
