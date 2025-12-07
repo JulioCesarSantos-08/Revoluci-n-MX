@@ -173,12 +173,28 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-// Redirigir admin
-if (admins.includes(user.email)) {
-  window.location.href = "admin.html";
-} else {
-  // Todos los demás entran como miembros
-  window.location.href = "publicacionesMiembro.html";
+// Lista de correos autorizados como administradores
+const admins = [
+  "ti43300@uvp.edu.mx",
+  "andrespersandoval@gmail.com",
+  "usuario@gmail.com",
+  "luisramirezd86@gmail.com"
+];
+
+try {
+  // Aquí va tu autenticación (signInWithEmailAndPassword, etc.)
+
+  // Redirigir admin
+  if (admins.includes(user.email)) {
+    window.location.href = "admin.html";
+  } else {
+    // Todos los demás entran como miembros
+    window.location.href = "publicacionesMiembro.html";
+  }
+
+} catch (error) {
+  console.error(error);
+  errorMsg.textContent = "Correo o contraseña incorrectos.";
 }
 
     // 🔹 Recuperar contraseña
