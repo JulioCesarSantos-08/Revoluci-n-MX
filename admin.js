@@ -1,9 +1,11 @@
 import { 
   getAuth, signOut, onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 import { 
-  getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc 
+  getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 import { app } from "./firebaseConfig.js";
 
 const auth = getAuth(app);
@@ -15,17 +17,20 @@ const puntosBtn = document.getElementById('puntosBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const contenido = document.getElementById('contenido');
 
-// ✅ Protección de administradores
-onAuthStateChanged(auth, (user) => {
+
+// ✅ Protección de administradores usando Firestore
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "index.html";
-  } else if (
-    user.email !== "ti43300@uvp.edu.mx" &&
-    user.email !== "andrespersandoval@gmail.com" &&
-    user.email !== "luisramirezd86@gmail.com"
-  ) {
+    return;
+  }
+
+  const ref = doc(db, "admins", user.email);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists() || snap.data().rol !== "admin") {
     alert("⚠️ Acceso denegado. No eres administrador.");
-    signOut(auth);
+    await signOut(auth);
     window.location.href = "index.html";
   }
 });
@@ -37,10 +42,12 @@ logoutBtn.addEventListener('click', async () => {
   window.location.href = "index.html";
 });
 
+
 // 🧩 Botones de navegación
 verMiembrosBtn.addEventListener('click', mostrarMiembros);
 publicacionesBtn.addEventListener('click', mostrarPublicaciones);
 puntosBtn.addEventListener('click', mostrarPuntos);
+
 
 // 👥 Mostrar lista de miembros con edición y eliminación
 async function mostrarMiembros() {
@@ -156,6 +163,7 @@ async function mostrarMiembros() {
   });
 }
 
+
 // 📰 Publicaciones
 function mostrarPublicaciones() {
   contenido.innerHTML = `
@@ -188,6 +196,7 @@ function mostrarPublicaciones() {
     document.getElementById('publicacionForm').reset();
   });
 }
+
 
 // 🎯 Puntos
 async function mostrarPuntos() {
