@@ -54,7 +54,7 @@
     const logoutBtn = document.getElementById('logoutBtn');
 
     // 🔹 Protección de acceso
-    const admins = ["ti43300@uvp.edu.mx", "andrespersandoval@gmail.com", "luisramirezd86@gmail.com"];
+    const admins = ["ti43300@uvp.edu.mx","usuario@gmail.com", "andrespersandoval@gmail.com", "luisramirezd86@gmail.com"];
     onAuthStateChanged(auth, (user) => {
       if (!user || !admins.includes(user.email)) {
         alert("⚠️ Acceso denegado.");
