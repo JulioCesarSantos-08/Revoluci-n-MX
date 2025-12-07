@@ -27,6 +27,7 @@ const db = getFirestore(app);
 const admins = [
   "ti43300@uvp.edu.mx",
   "andrespersandoval@gmail.com",
+  "usuario@gmail.com",
   "luisramirezd86@gmail.com"
 ];
 
@@ -51,15 +52,15 @@ document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   window.location.href = "index.html";
 });
 
-// 👥 Cargar miembros
+// 👥 Cargar lista de miembros
 async function cargarMiembros() {
   const select = document.getElementById("emailMiembro");
-  select.innerHTML = `<option value="">Cargando miembros...</option>`;
+  select.innerHTML = `<option value="">Cargando...</option>`;
 
-  const miembrosSnap = await getDocs(collection(db, "miembros"));
+  const snap = await getDocs(collection(db, "miembros"));
   select.innerHTML = `<option value="">Selecciona un miembro</option>`;
 
-  miembrosSnap.forEach((docSnap) => {
+  snap.forEach(docSnap => {
     const data = docSnap.data();
     const option = document.createElement("option");
     option.value = data.email;
@@ -99,7 +100,7 @@ document.getElementById("puntosForm")?.addEventListener("submit", async (e) => {
   }
 });
 
-// 📜 Cargar historial
+// 📜 Cargar historial de puntos
 async function cargarHistorial() {
   const contenedor = document.getElementById("historialPuntos");
   contenedor.innerHTML = `<p style="text-align:center; color:#aaa;">Cargando...</p>`;
@@ -113,28 +114,32 @@ async function cargarHistorial() {
   }
 
   contenedor.innerHTML = "";
+
   for (const docSnap of snap.docs) {
     const data = docSnap.data();
     const id = docSnap.id;
+
     const fecha = data.fecha?.toDate().toLocaleString() || "Sin fecha";
+
     const ultimaEdicion = data.ultimaEdicion
       ? `<p class="editado">🕓 Última edición: ${data.ultimaEdicion.toDate().toLocaleString()}</p>`
       : "";
 
-    // 🔹 obtener nombre del miembro
+    // 🔹 Obtener nombre del miembro
     let nombreMiembro = data.emailMiembro;
     const miembroDoc = await getDoc(doc(db, "miembros", data.emailMiembro));
     if (miembroDoc.exists()) {
       nombreMiembro = miembroDoc.data().nombre || data.emailMiembro;
     }
 
-    // 🔹 obtener nombre del admin
+    // 🔹 Obtener nombre del admin
     let nombreAdmin = data.adminEmail;
     const adminDoc = await getDoc(doc(db, "admins", data.adminEmail));
     if (adminDoc.exists()) {
       nombreAdmin = adminDoc.data().nombre || data.adminEmail;
     }
 
+    // Crear tarjeta
     const div = document.createElement("div");
     div.classList.add("registro");
 
@@ -157,9 +162,9 @@ async function cargarHistorial() {
   // 🗑️ Eliminar registro
   document.querySelectorAll(".eliminar").forEach(btn => {
     btn.addEventListener("click", async () => {
-      if (confirm("¿Eliminar este registro de puntos?")) {
+      if (confirm("¿Eliminar este registro?")) {
         await deleteDoc(doc(db, "historialPuntos", btn.dataset.id));
-        alert("🗑️ Registro eliminado correctamente");
+        alert("🗑️ Registro eliminado");
         cargarHistorial();
       }
     });
@@ -168,23 +173,25 @@ async function cargarHistorial() {
   // ✏️ Editar registro
   document.querySelectorAll(".editar").forEach(btn => {
     btn.addEventListener("click", async () => {
-      const docRef = doc(db, "historialPuntos", btn.dataset.id);
-      const snap = await getDoc(docRef);
+      const ref = doc(db, "historialPuntos", btn.dataset.id);
+      const snap = await getDoc(ref);
       if (!snap.exists()) return;
 
       const datos = snap.data();
-      const nuevoMotivo = prompt("Editar motivo:", datos.descripcion);
-      const nuevosPuntos = prompt("Editar cantidad de puntos:", datos.puntos);
 
-      if (nuevoMotivo && nuevosPuntos) {
-        await updateDoc(docRef, {
-          descripcion: nuevoMotivo,
-          puntos: Number(nuevosPuntos),
-          ultimaEdicion: serverTimestamp()
-        });
-        alert("✅ Registro actualizado correctamente");
-        cargarHistorial();
-      }
+      const nuevoMotivo = prompt("Editar motivo:", datos.descripcion);
+      const nuevosPuntos = prompt("Editar puntos:", datos.puntos);
+
+      if (!nuevoMotivo || !nuevosPuntos) return;
+
+      await updateDoc(ref, {
+        descripcion: nuevoMotivo,
+        puntos: Number(nuevosPuntos),
+        ultimaEdicion: serverTimestamp()
+      });
+
+      alert("✅ Registro actualizado");
+      cargarHistorial();
     });
   });
 }
