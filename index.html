@@ -38,7 +38,10 @@
       box-shadow: 0 0 25px #00b4ff;
       animation: glow 2s infinite alternate;
     }
-    @keyframes glow { from { box-shadow: 0 0 10px #00b4ff; } to { box-shadow: 0 0 30px #00b4ff; } }
+    @keyframes glow {
+      from { box-shadow: 0 0 10px #00b4ff; }
+      to { box-shadow: 0 0 30px #00b4ff; }
+    }
     .logo { width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 10px #ffd700); }
     h2 { color: #ffd700; font-size: 2.2rem; letter-spacing: 2px; margin-bottom: 5px; }
     p { font-size: 1.1rem; margin-bottom: 20px; color: #ccc; }
@@ -89,7 +92,6 @@
 
     .error { margin-top: 10px; color: #ff4c4c; font-size: 1rem; }
 
-    /* 🔹 Botón NUEVO para registro */
     .newuser-btn {
       display: block;
       margin-top: 15px;
@@ -173,7 +175,7 @@
     const forgotPass = document.getElementById('forgotPass');
 
 
-    // 🔹 Inicio de sesión con roles Firestore
+    // 🔹 Inicio de sesión con roles Firestore + guardado local
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -188,7 +190,21 @@
         const ref = doc(db, "admins", user.email);
         const snap = await getDoc(ref);
 
-        if (snap.exists() && snap.data().rol === "admin") {
+        let role = "miembro";
+        let nombre = user.email;
+
+        if (snap.exists()) {
+          role = snap.data().rol || "admin";
+          nombre = snap.data().nombre || user.email;
+        }
+
+        // ✔️ Guardar datos en localStorage para todas las páginas
+        localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("userName", nombre);
+        localStorage.setItem("userRole", role);
+
+        // ✔️ Redirección por rol
+        if (role === "admin") {
           window.location.href = "admin.html";
         } else {
           window.location.href = "publicacionesMiembro.html";
